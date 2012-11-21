@@ -1,0 +1,53 @@
+
+I started this project as an exercise in using numpy's ndimages.  The program
+selects and sets the background wallpaper on multiple displays/monitors (and
+single monitors as well).  It runs on both Linux and Windows.  (Most of the
+testing has been on one and two monitor systems with Python 2.7 or 3.2, on
+Ubuntu and Windows 7.)  Note that under KDE and Xfce on Linux the generated
+image will not be automatically set to be the wallpaper, in "spanned" mode;
+you'll have to apply those settings by hand.
+
+The dependencies are as follows:
+
+   Linux with Python 2.x (at least Python 2.6):
+                   Ubuntu                               Fedora
+      numpy       sudo apt-get install python-numpy    yum install numpy
+      scipy       sudo apt-get install python-scipy    yum install scipy
+      PIL         sudo apt-get install python-imaging  yum install python-imaging
+      xrandr      pre-installed for most distributions 
+      gsettings   pre-installed for most distributions
+
+   Linux with Python 3.x:
+      Same as for Python 2.x.  For numpy and scipy just apt-get the version
+      that starts with python3, e.g., python3-numpy.  The PIL library
+      has not yet been officially ported (as of Nov, 2012), so you would 
+      need to get one of the unofficial 3.x versions of PIL working.
+      One version of the ported source code (needs compilation) is at 
+      http://www.lfd.uci.edu/~gohlke/pythonlibs/#pil
+      http://mail.python.org/pipermail/image-sig/2011-August/006843.html
+
+   Windows with Python 2.x or 3.x (at least Python 2.6):
+      Needs numpy, scipy, and PIL.  Windows users who want binaries and are not
+      using a package like Python(x,y) where the dependencies are pre-installed
+      might try the following (get the version to match the installed Python):
+
+      http://www.lfd.uci.edu/~gohlke/pythonlibs/#numpy
+      http://www.lfd.uci.edu/~gohlke/pythonlibs/#scipy
+      http://www.lfd.uci.edu/~gohlke/pythonlibs/#pil
+
+      Note that on Windows the background mode must be explicitly set to 
+      "tiled" in the standard wallpaper-selection dialog window.  Also,
+      on XP you may need to always choose the .bmp format for the saved
+      image files.
+
+   Windows Cygwin Python
+      The dependencies are the same as in Windows.  Cygwin comes with 
+      packages for python-argparse, python-imaging, and python-numpy.
+      Unfortunately, scipy is apparently difficult to install in Cygwin.
+
+Run makeSpanningBackground --help for the documentation.  The output of
+that command follows.
+
+=============================================================================
+
+
