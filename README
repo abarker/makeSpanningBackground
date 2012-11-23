@@ -1,12 +1,14 @@
 
 I started this project as an exercise in using Scipy ndimages (which are
 actually Numpy arrays).  The program selects and sets the background wallpaper
-on multiple displays/monitors (and single monitors as well).  It runs on both
-Linux and Windows.  (Most of the testing has been on one and two monitor
-systems with Python 2.7 or 3.2, on Ubuntu and Windows 7, but Fedora and Windows
-XP have had some testing.)  Note that under KDE and Xfce on Linux the generated
-image will not be automatically set to be the wallpaper (with the "spanned"
-mode auto-set); you'll have to apply those settings by hand.
+on multiple displays/monitors (and single monitors as well).
+
+The program runs on both Linux and Windows versions of Python.  Most of the
+testing has been on one and two monitor systems with Python 2.7 or 3.2, on
+Ubuntu and Windows 7, but Fedora and Windows XP have also had some testing.
+Note that under KDE and Xfce on Linux the generated image will not be
+automatically set to be the wallpaper (with the "spanned" mode auto-set);
+you'll have to apply those settings by hand.
 
 The dependencies are as follows:
 
@@ -46,17 +48,18 @@ The dependencies are as follows:
       packages for python-argparse, python-imaging, and python-numpy.
       Unfortunately, scipy is apparently difficult to install in Cygwin.
 
-Run makeSpanningBackground --help for the documentation.  The output of
-that command follows.
+Run 
+   python makeSpanningBackground --help
+for the documentation.  The output of that command follows.
 
 ===============================================================================
 
-Usage: makeSpanningBackground [-h] -o OUTFILE [--noclobber] [-R] [-1]
-                              [-p PERCENTERROR] [-z ZOOMSPLINE] [-s] [-v] [-d]
+Usage: makeSpanningBackground [-h] -o OUTFILE [-v] [-1]
                               [-f FITIMAGE FITIMAGE FITIMAGE]
-                              [-c COLORFILL COLORFILL COLORFILL]
-                              [-r RESLIST [RESLIST ...]] [-w WINDOWS WINDOWS]
-                              [-x]
+                              [-p PERCENTERROR] [-z ZOOMSPLINE] [-s]
+                              [-c COLORFILL COLORFILL COLORFILL] [-R] [-d]
+                              [--noclobber] [-r RESLIST [RESLIST ...]]
+                              [-w WINDOWS WINDOWS] [-x]
                               imageFilesOrDirs [imageFilesOrDirs ...]
 
 Make a single, combined background image file from separate background image
@@ -69,14 +72,19 @@ image files. The required flag '--outfile' or '-o' specifies the
 pathname of the file where the combined image file will be written (or
 silently overwritten). An example: 
 
-   makeSpanningBackground ~/bgDir photo.jpg -o combo.jpg 
+   python makeSpanningBackground ~/bgDir photo.jpg -o combo.bmp 
+
+On Linux the initial "python" above can be omitted if the Python
+version at "/usr/bin/python" is the correct one. The file (or a script
+calling it) can also be placed somewhere in the PATH to avoid having
+to supply a path. 
 
 To use this kind of combined background image in Linux the background
 mode should be set to 'spanned'; the program will attempt to set this
 automatically. On Windows the background mode should be 'tiled', but
 the mode must be explicitly set by the user (usually from the system's
 background-setting window). In Windows XP the .bmp format should be
-chosen for the output file (simply by using that suffix on the
+chosen for the output file (simply by using that suffix on the output
 filename). Also, backgrounds set in Windows XP do not persist between
 logins and must be reset. 
 
@@ -86,7 +94,7 @@ can be scheduled to run as a cron job or scheduled task. A simpler
 command in Linux to change the background every hour (3600 secs) would
 be something like: 
 
-   while true; do nice makeSpanningBackground ~/Pics -o combo.jpg; sleep
+   while true; do nice makeSpanningBackground ~/Pics -o combo.bmp; sleep
 3600; done & 
 
 On Linux it is useful to create a simple shell-script wrapper to call
@@ -100,14 +108,14 @@ Positional arguments:
                         quotes around any file or directory name which
                         contains a space. Files on the command line and in
                         directories will be silently ignored unless they have
-                        a suffix in the list ['.bmp', '.dib', '.dcx', '.eps',
-                        '.ps', '.gif', '.im', '.jpg', '.jpe', '.jpeg', '.pcd',
-                        '.pcx', '.pdf', '.png', '.pbm', '.pgm', '.ppm',
-                        '.psd', '.tif', '.tiff', '.xbm', '.xpm', '.BMP',
-                        '.DIB', '.DCX', '.EPS', '.PS', '.GIF', '.IM', '.JPG',
-                        '.JPE', '.JPEG', '.PCD', '.PCX', '.PDF', '.PNG',
-                        '.PBM', '.PGM', '.PPM', '.PSD', '.TIF', '.TIFF',
-                        '.XBM', '.XPM'].
+                        a suffix in the list set(['.BMP', '.TIFF', '.pcd',
+                        '.GIF', '.jpe', '.jpg', '.PSD', '.tif', '.PDF',
+                        '.jpeg', '.ps', '.xpm', '.gif', '.im', '.PBM', '.pgm',
+                        '.ppm', '.XPM', '.IM', '.eps', '.TIF', '.dcx', '.bmp',
+                        '.pbm', '.dib', '.PGM', '.PPM', '.XBM', '.JPEG',
+                        '.PS', '.EPS', '.png', '.pcx', '.DCX', '.PCD', '.DIB',
+                        '.PNG', '.JPE', '.JPG', '.xbm', '.psd', '.PCX',
+                        '.pdf', '.tiff']).
 
 
 Optional arguments:
@@ -123,16 +131,22 @@ Optional arguments:
                         will necessarily be settable as background images. The
                         usual choice is Jpeg, with the '.jpg' suffix.
 
-  --noclobber           Never overwrite an existing file as the output
-                        file.
+  -v, --verbose         Print more information about the program's actions and
+                        progress.
 
-  -R, --recursive       Recursively search any supplied image directories for
-                        image files.
-
-  -1, --oneimage        Use a single background image, scaled to spread over
+  -1, --oneimage        Use a single background image, scaled to stretch over
                         all the displays. This is currently based on the
                         screen resolutions, not the physical sizes of the
                         monitors (dpi).
+
+  -f FITIMAGE FITIMAGE FITIMAGE, --fitimage FITIMAGE FITIMAGE FITIMAGE
+                        If this option is set then images are scaled to fully
+                        fit into the corresponding display. The three
+                        arguments are RGB byte values specifying the color of
+                        any region not covered by an image. Use '-f 0 0 0' for
+                        black. The default program behavior without this
+                        switch is to use the minimum scaling to completely
+                        fill the display while preserving the aspect ratio.
 
   -p PERCENTERROR, --percenterror PERCENTERROR
                         The percentage of an image's area which is allowed to
@@ -148,7 +162,7 @@ Optional arguments:
                         Set the order of the spline used by ndimage to resize
                         (zoom) images. The value can be from 0 to 5, with 3
                         the default. Lower orders are faster, higher orders
-                        have better quality. (Also for higher-quality images:
+                        have better quality. (Also, for higher-quality images:
                         output files in .bmp format are larger but tend to
                         look better.)
 
@@ -164,27 +178,21 @@ Optional arguments:
                         image files will corresponding one to one with the
                         list of resolution specifiers.
 
-  -v, --verbose         Print more information about the program's actions and
-                        progress.
+  -c COLORFILL COLORFILL COLORFILL, --colorfill COLORFILL COLORFILL COLORFILL
+                        The three arguments are RGB byte values specifying the
+                        color of any region in the large, combined image (a
+                        bounding-box on the displays) which is not covered by
+                        a display. Use '-c 0 0 0' for black.
+
+  -R, --recursive       Recursively search any supplied image directories for
+                        image files.
 
   -d, --dontapply       Do not attempt to apply the created image as the
                         working background image. The program will simply exit
                         after writing the image file.
 
-  -f FITIMAGE FITIMAGE FITIMAGE, --fitimage FITIMAGE FITIMAGE FITIMAGE
-                        If this option is set then images are scaled to fully
-                        fit into the corresponding display. The three
-                        arguments are RGB byte values specifying the color of
-                        any region not covered by an image. Use '-f 0 0 0' for
-                        black. The default program behavior without this
-                        switch is to use the minimum scaling to completely
-                        fill the display while preserving the aspect ratio.
-
-  -c COLORFILL COLORFILL COLORFILL, --colorfill COLORFILL COLORFILL COLORFILL
-                        The three arguments are RGB byte values specifying the
-                        color of any region in the large, combined image which
-                        is not covered by an image. Use '-c 0 0 0' for
-                        black.
+  --noclobber           Never overwrite an existing file as the output
+                        file.
 
   -r RESLIST [RESLIST ...], --reslist RESLIST [RESLIST ...]
                         Set the resolutions and offsets to use. No system
@@ -196,25 +204,25 @@ Optional arguments:
                         sizes (resolution). Like in X11, (0,0) is assumed to
                         be at the top left of a bounding box on all the
                         displays. For a Windows machine the top left of the
-                        primary display will also need to be set, using the '
-                        --windows' option described below.
+                        primary display will also need to be defined, using
+                        the '--windows' option described below.
 
   -w WINDOWS WINDOWS, --windows WINDOWS WINDOWS
                         This option should only be necessary on a Windows
-                        machine when using the '--reslist' option (or in cases
-                        where the primary display's location is not being
-                        detected correctly). The two arguments x and y (in
-                        that order) should be set to the top left position of
-                        the primary display. This is necessary because, unlike
-                        X11, Windows assumes (0,0) is at the top left of the
-                        primary display. Other displays can then have negative
-                        locations. This program translates Windows positions
-                        so that all addresses are positive, with (0,0) at the
-                        top left of all the displays (which is how positions
-                        should be entered for the '--reslist' option). The
-                        program then corrects for this translation in a final
-                        step, which requires knowing the top left position of
-                        the primary display.
+                        machine when using the '--reslist' option. The two
+                        arguments x and y (in that order) should be set to the
+                        top left position of the primary display. This is
+                        necessary because, unlike X11, Windows assumes (0,0)
+                        is at the top left of the primary display. Other
+                        displays can then have negative locations. This
+                        program translates Windows positions so that all
+                        addresses are positive, with (0,0) at the top left of
+                        all the displays (which is how positions should be
+                        entered for the '--reslist' option). The program then
+                        corrects for this translation in a final step, which
+                        wraps the image into tiled mode relative to the
+                        primary display. This requires knowing the top left
+                        position of the primary display.
 
   -x, --x11             Create an X11 type image even if Windows is detected
                         as the OS. When this option is selected no final

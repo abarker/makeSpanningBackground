@@ -146,16 +146,22 @@ parser = argparse.ArgumentParser(description="""
    of the file where the combined image file will be written (or silently
    overwritten).  An example:^^f
    
-   ^^n^^n^^s^^s^^s^^fmakeSpanningBackground ~/bgDir photo.jpg -o combo.jpg^^f
+   ^^n^^n^^s^^s^^s^^fpython makeSpanningBackground ~/bgDir photo.jpg -o
+   combo.bmp^^f
    
+   ^^n^^n^^fOn Linux the initial "python" above can be omitted if the Python
+   version at "/usr/bin/python" is the correct one.  The file (or a script
+   calling it) can also be placed somewhere in the PATH to avoid having to
+   supply a path.^^f
+
    ^^n^^n^^fTo use this kind of combined background image in Linux the
    background mode should be set to 'spanned'; the program will attempt to set
    this automatically. On Windows the background mode should be 'tiled', but
    the mode must be explicitly set by the user (usually from the system's
    background-setting window).  In Windows XP the .bmp format should be chosen
-   for the output file (simply by using that suffix on the filename).  Also,
-   backgrounds set in Windows XP do not persist between logins and must be
-   reset.^^f
+   for the output file (simply by using that suffix on the output filename).
+   Also, backgrounds set in Windows XP do not persist between logins and must
+   be reset.^^f
    
    ^^n^^n^^fNote that this program can be set as a startup program to change the
    background wallpaper on logins.  To regularly change the wallpaper it can be
@@ -164,7 +170,7 @@ parser = argparse.ArgumentParser(description="""
    like:^^f
 
    ^^n^^n^^s^^s^^s^^fwhile true; do nice makeSpanningBackground ~/Pics -o
-   combo.jpg; sleep 3600; done &^^f
+   combo.bmp; sleep 3600; done &^^f
 
    ^^n^^n^^fOn Linux it is useful to create a simple shell-script wrapper to
    call the program with the "usual" command-line arguments.^^f^^n""",
