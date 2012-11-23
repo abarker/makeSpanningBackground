@@ -185,7 +185,7 @@ parser.add_argument("imageFilesOrDirs", nargs="+", help="""
    directories containing image files.  Use quotes around any file or directory
    name which contains a space.  Files on the command line and in directories
    will be silently ignored unless they have a suffix in the
-   list """ + str(allowedImageFileSuffixes) + ".^^n")
+   list """ + str(sorted(list(allowedImageFileSuffixes))) + ".^^n")
 
 parser.add_argument("-o", "--outfile", required=True, nargs=1, help="""
 

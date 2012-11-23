@@ -108,14 +108,14 @@ Positional arguments:
                         quotes around any file or directory name which
                         contains a space. Files on the command line and in
                         directories will be silently ignored unless they have
-                        a suffix in the list set(['.BMP', '.TIFF', '.pcd',
-                        '.GIF', '.jpe', '.jpg', '.PSD', '.tif', '.PDF',
-                        '.jpeg', '.ps', '.xpm', '.gif', '.im', '.PBM', '.pgm',
-                        '.ppm', '.XPM', '.IM', '.eps', '.TIF', '.dcx', '.bmp',
-                        '.pbm', '.dib', '.PGM', '.PPM', '.XBM', '.JPEG',
-                        '.PS', '.EPS', '.png', '.pcx', '.DCX', '.PCD', '.DIB',
-                        '.PNG', '.JPE', '.JPG', '.xbm', '.psd', '.PCX',
-                        '.pdf', '.tiff']).
+                        a suffix in the list ['.BMP', '.DCX', '.DIB', '.EPS',
+                        '.GIF', '.IM', '.JPE', '.JPEG', '.JPG', '.PBM',
+                        '.PCD', '.PCX', '.PDF', '.PGM', '.PNG', '.PPM', '.PS',
+                        '.PSD', '.TIF', '.TIFF', '.XBM', '.XPM', '.bmp',
+                        '.dcx', '.dib', '.eps', '.gif', '.im', '.jpe',
+                        '.jpeg', '.jpg', '.pbm', '.pcd', '.pcx', '.pdf',
+                        '.pgm', '.png', '.ppm', '.ps', '.psd', '.tif',
+                        '.tiff', '.xbm', '.xpm'].
 
 
 Optional arguments:
