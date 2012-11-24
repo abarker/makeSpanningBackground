@@ -371,6 +371,7 @@ def getDisplayInfoLinux():
    
    displayResList = [] # list of resolution tuples for each display
    for line in output:
+      if len(line) < 2: continue # just in case format changes
       if line[1] == "connected":
          if len(line) < 3: continue
          res = line[2] # get string for display's resolution and offsets
