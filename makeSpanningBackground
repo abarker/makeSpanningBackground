@@ -36,7 +36,7 @@ from __future__ import division, print_function
 import numpy as np
 import scipy as sp
 import scipy.ndimage
-import math, subprocess, os, os.path, glob, sys, re, random
+import math, subprocess, os, os.path, glob, sys, re, random, time
 # import matplotlib.pyplot as plt # only needed for debugging, to view images
 import argparse, textwrap
 
@@ -166,17 +166,13 @@ parser = argparse.ArgumentParser(description="""
    filename).  Also, backgrounds set in Windows XP do not persist between
    logins and must be reset.^^f
    
-   ^^n^^n^^fNote that this program can be set as a startup program to change the
-   background wallpaper on logins.  To regularly change the wallpaper it can be
-   scheduled to run as a cron job or scheduled task.  A simpler command in
-   Linux to change the background every hour (3600 secs) would be something
-   like:^^f
+   ^^n^^n^^fNote that this program can be set as a startup program to change
+   the background wallpaper on logins.  When the '-t <minutes>' command switch
+   is used the program will infinitely loop, waiting for the specified number
+   of minutes between iterations.^^f
 
-   ^^n^^n^^s^^s^^s^^fwhile true; do nice makeSpanningBackground ~/Pics -o
-   combo.bmp; sleep 3600; done &^^f
-
-   ^^n^^n^^fOn Linux it is useful to create a simple shell-script wrapper to
-   call the program with the "usual" command-line arguments.^^f^^n""",
+   ^^n^^fIt is convenient to create a simple shell-script wrapper or batch
+   file to call the program with the "usual" command-line arguments.^^f^^n""",
    
    epilog="""The makeSpanningBackground program is Copyright (c) 2012 by
    Allen Barker.  Released under the permissive MIT license.
@@ -186,9 +182,10 @@ parser.add_argument("imageFilesOrDirs", nargs="+", help="""
 
    A whitespace-separated list of the pathnames of image files and/or
    directories containing image files.  Use quotes around any file or directory
-   name which contains a space.  Files on the command line and in directories
-   will be silently ignored unless they have a suffix in the
-   list """ + str(sorted(list(allowedImageFileSuffixes))) + ".^^n")
+   name which contains a space.  Pathnames can be repeated on the list, and the
+   list will be reloaded if it becomes empty.  A specified filename will be
+   silently ignored if it does not have a suffix in the list """ +
+   str(sorted(list(allowedImageFileSuffixes))) + ".^^n")
 
 parser.add_argument("-o", "--outfile", required=True, nargs=1, help="""
 
@@ -197,12 +194,13 @@ parser.add_argument("-o", "--outfile", required=True, nargs=1, help="""
    that ndimage (via PIL) can handle, and the output file will be written in
    that format.  Not all formats will necessarily be settable as background
    images.  Common choices are '.jpg' and '.bmp', where the latter produces
-   files which are larger but of better quality.  Note that Windows XP requires
+   files which are larger but of higher quality.  Note that Windows XP requires
    the '.bmp' format.^^n""")
 
 parser.add_argument("-v", "--verbose", action="store_true", help="""
 
-   Print more information about the program's actions and progress.^^n""")
+   Print more information about the program's actions and progress.  Without
+   this switch only error messages are printed to the screen.^^n""")
 
 parser.add_argument("-1", "--oneimage", action="store_true", help="""
 
@@ -218,6 +216,16 @@ parser.add_argument("-f", "--fitimage", nargs=3, type=int, help="""
    The default program behavior without this switch is to use the minimum
    scaling to completely fill the display while preserving the aspect
    ratio.^^n""")
+
+parser.add_argument("-t", "--timedelay", nargs=1, type=float, help="""
+
+   If this option is set the program will infinitely loop.  On each iteration
+   it will collect current display information, re-select images for each
+   display, create a combined image, and set it as the background (assuming no
+   other options modify that behavior).  The floating point argument gives the
+   number of minutes to sleep between iterations.  The image list will only be
+   reloaded when it becomes empty, so every image will be used exactly once
+   before any images are reloaded.^^n""")
 
 parser.add_argument("-p", "--percenterror", nargs=1, type=float, help="""
 
@@ -459,26 +467,30 @@ def getDisplayInfoWindows():
 
    return tuple(displayResList)
 
-backgroundFilenamesRead = False # global flag, set when filenames read
+#backgroundFilenamesRead = False # global flag, set when filenames read
 allBackgroundFiles = [] # global list of all the background files specified
 
 def getNextBackgroundImage(dispRes, dispResList):
-   """Get the next background image from the user-specified list.  All files
-   are removed from the global list once they are selected, but only the one
+
+   """Get the next background image from the user-specified list.  The selected
+   file is removed from the global list once it is selected, but only the
    selected instance is removed (files can be listed multiple times as
    arguments).  Returns a 2-tuple containing the filename of the file and the
-   image itself.  Returns the empty tuple when the global list has no more
-   candidate filenames.  The display resolution argument dispRes is used to
+   image itself.  Always reloads the global list of filenames when the list
+   becomes empty.  Returns the empty tuple only when the global list has no
+   suitable filenames (such as when '--percenterror' is too low for the
+   available images).  The display resolution argument dispRes is used to
    calculate the percent error in scaling when the '--percenterror' option is
    selected, and the list dispResList is used to calculate the error when the
    '--oneimage' option is selected."""
 
-   global backgroundFilenamesRead # boolean to remember if we've read the list
-   global allBackgroundFiles # global list of background filenames
-
-   # Read in the list of all background image files if it has not been done.
-   if not backgroundFilenamesRead:
-      backgroundFilenamesRead = True
+   def reloadBackgroundFiles():
+      """Convert args.imageFilesOrDirs into the list allBackgroundFiles of
+      image files.  Reset the list if it is already set."""
+      #global backgroundFilenamesRead # boolean to remember if list was read
+      global allBackgroundFiles # global list of background filenames
+      #backgroundFilenamesRead = True
+      allBackgroundFiles = []
       for imagePath in args.imageFilesOrDirs:
          # Make sure we didn't get passed a bad pathname.
          if not os.path.exists(imagePath):
@@ -506,13 +518,26 @@ def getNextBackgroundImage(dispRes, dispResList):
       allBackgroundFiles = [ fullpath(f) for f in allBackgroundFiles 
                                                       if hasImageSuffix(f) ]
    
+   # Read in the list of all background image files if it has not been done.
+   #if not backgroundFilenamesRead: reloadBackgroundFiles()
+   # TODO delete global backgroundFilenamesRead
+
    # Create a list of indices to choose from, so we can remove bad candidates
    # locally before finally modifying the global list.
    backgroundIndices = list(range(len(allBackgroundFiles)))
+   localResetDone = False
 
    # Select a file from the list of files and try to open it; repeat if needed.
    while True:
-      if not backgroundIndices: return () # return empty list if no more files
+      if not backgroundIndices: 
+         if localResetDone: # return empty list, no files are suitable
+            return () 
+         else: # reload the file list to search for a suitable image file
+            localResetDone = True
+            reloadBackgroundFiles()
+            backgroundIndices = list(range(len(allBackgroundFiles)))
+            if args.verbose:
+               print("Loading or reloading the list of image files.\n")
       if args.sequential:
          fileIndex = backgroundIndices.pop(0)
       else:
@@ -655,8 +680,8 @@ def scaleImage(image, yxNew, zoomSpline):
       zoomY = (yxNew[0]+1E-5)/yxCurr[0]
       zoomX = (yxNew[1]+1E-5)/yxCurr[1] 
       if args.verbose:
-         print("Scaling image with (zoomY,zoomX) =", 
-               (round(zoomY,4), round(zoomX,4)))
+         print("Scaling image with spline order", zoomSpline, "and "
+               "(zoomY,zoomX) =", (round(zoomY,4), round(zoomX,4)))
 
       scaledImage = sp.ndimage.interpolation.zoom(
                              image, (zoomY,zoomX,1), order=zoomSpline)
@@ -916,52 +941,64 @@ if __name__ == "__main__":
                "\nLinux distribution:", linuxVersion)
       else: 
          print("\nRunning makeSpanningBackground on an unknown OS...")
-   
-   # Get the display information.
-   displayResList = getDisplayInfo()
-   numDisplays = len(displayResList)
-   if numDisplays == 0:
-      print("\nError in makeSpanningBackground: No displays detected."
-            "\nMaybe try explicitly setting the resolutions with the"
-            "\n'--reslist' option.")
-      sys.exit(1)
-   if args.verbose: 
-      print("\nDetected", numDisplays, "displays:\n   ", displayResList, "\n")
+ 
+   # Now begin looping if the '--timedelay' option was set; if it was not
+   # the loop will break after one execution.
+   firstLoopCompleted = False
+   while True:
 
-   # Select an image for each display.
-   bgImages = []
-   for dispRes, count in zip(displayResList, range(len(displayResList))):
-      image = getNextBackgroundImage(dispRes, displayResList)
-      if not image:
-         print("\nError in makeSpanningBackground: Not enough recognized image"
-               "\nfiles for all the displays.  Note that filenames can be"
-               "\nrepeated in the list of arguments.", file=sys.stderr)
+      # Get the display information.
+      displayResList = getDisplayInfo()
+      numDisplays = len(displayResList)
+      if numDisplays == 0:
+         print("\nError in makeSpanningBackground: No displays detected."
+               "\nMaybe try explicitly setting the resolutions with the"
+               "\n'--reslist' option.")
          sys.exit(1)
       if args.verbose: 
-         print("Image selected for display", count,"is\n   ", image[0], "\n")
-
-      bgImages.append(image[1])
-      if args.oneimage: break
+         print("\nDetected", numDisplays, "displays:\n   ", displayResList,
+               "\n")
    
-   # Make the large, combined image.
-   giantImage = createGiantImage(bgImages,displayResList)
+      # Select an image for each display.
+      bgImages = []
+      for dispRes, count in zip(displayResList, range(len(displayResList))):
+         image = getNextBackgroundImage(dispRes, displayResList)
+         if not image:
+            print("\nError in makeSpanningBackground: No suitable image files"
+                  "\nfound for display", str(count)+".", file=sys.stderr)
+            sys.exit(1)
+         if args.verbose: 
+            print("Image selected for display", count,"is\n   ", image[0], "\n")
+   
+         bgImages.append(image[1])
+         if args.oneimage: break
+      
+      # Make the large, combined image.
+      giantImage = createGiantImage(bgImages,displayResList)
+   
+      # Write out the giant image to a file.
+      try:
+         if args.verbose: 
+            print("\nWriting the combined image to the file\n   "+saveFileName)
+         sp.misc.imsave(saveFileName, giantImage)
+      except IOError as e:
+         print("\nWarning from makeSpanningBackground: Could not save to file"
+               "\n   " + saveFileName, "\nThe reported error was:\n", e, 
+               file=sys.stderr)
+   
+      if not args.dontapply:
+         if args.verbose: 
+            print("\nSetting the new image as the current background wallpaper.")
+            if systemOs == "Windows":
+               print("(Be sure to set wallpaper mode to 'tiled' in Windows.)")
+         setImageAsCurrentWallpaper(saveFileName)
 
-   # Write out the giant image to a file.
-   try:
+      firstLoopCompleted = True
+      if not args.timedelay: break
       if args.verbose: 
-         print("\nWriting the combined image to the file\n   " + saveFileName)
-      sp.misc.imsave(saveFileName, giantImage)
-   except IOError as e:
-      print("\nWarning from makeSpanningBackground: Could not save to file\n   "
-            + saveFileName, "\nThe reported error was:\n", e, file=sys.stderr)
-
-   if not args.dontapply:
-      if args.verbose: 
-         print("\nSetting the new image as the current background wallpaper.")
-         if systemOs == "Windows":
-            print("(Be sure to set wallpaper mode to 'tiled' in Windows.)")
-      setImageAsCurrentWallpaper(saveFileName)
-
+         print("\n"+"-"*10, "Sleeping for", args.timedelay[0], "minutes.", "-"*30, "\n")
+      time.sleep(args.timedelay[0]*60.0)
+   
    if args.verbose: 
       print("\nFinished execution of makeSpanningBackground.")
-
+   
