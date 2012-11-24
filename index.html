@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="MakeSpanningBackground : A command-line utility which creates a background wallpaper to span multiple displays/monitors and sets it as the current background." />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>MakeSpanningBackground</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/abarker/makeSpanningBackground">View on GitHub</a>
+
+          <h1 id="project_title">MakeSpanningBackground</h1>
+          <h2 id="project_tagline">A command-line utility which creates a background wallpaper to span multiple displays/monitors and sets it as the current background.</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/abarker/makeSpanningBackground/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/abarker/makeSpanningBackground/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <p>The program runs on both Linux and Windows versions of Python.  Most of the
+testing has been on one and two monitor systems with Python 2.7 or 3.2, on
+Ubuntu and Windows 7, but Fedora and Windows XP have also had some testing.
+Note that under KDE and Xfce on Linux the generated image will not be
+automatically set to be the wallpaper (with the "spanned" mode auto-set);
+you'll have to apply those settings by hand.</p>
+
+<p>The dependencies are as follows:</p>
+
+<pre>
+   Linux with Python 2.x (at least Python 2.6):
+                   Ubuntu                               Fedora
+      numpy       sudo apt-get install python-numpy    yum install numpy
+      scipy       sudo apt-get install python-scipy    yum install scipy
+      PIL         sudo apt-get install python-imaging  yum install python-imaging
+      xrandr      pre-installed for most distributions 
+      gsettings   pre-installed for most distributions
+
+   Linux with Python 3.x:
+      Same as for Python 2.x.  For numpy and scipy just apt-get the version
+      that starts with python3, e.g., python3-numpy.  The PIL library
+      has not yet been officially ported (as of Nov, 2012), so you would 
+      need to get one of the unofficial 3.x versions of PIL working.
+      One version of the ported source code (needs compilation) is at 
+      http://www.lfd.uci.edu/~gohlke/pythonlibs/#pil
+      http://mail.python.org/pipermail/image-sig/2011-August/006843.html
+
+   Windows with Python 2.x or 3.x (at least Python 2.6):
+      Needs numpy, scipy, and PIL.  Windows users who want binaries and are not
+      using a package like Python(x,y) where the dependencies are pre-installed
+      might try the following (get the version to match the installed Python):
+
+      http://www.lfd.uci.edu/~gohlke/pythonlibs/#numpy
+      http://www.lfd.uci.edu/~gohlke/pythonlibs/#scipy
+      http://www.lfd.uci.edu/~gohlke/pythonlibs/#pil
+
+      Note that on Windows the background mode must be explicitly set to 
+      "tiled" in the standard wallpaper-selection dialog window.  Also,
+      on XP you may need to always choose the .bmp format for the saved
+      image files.
+
+   Windows Cygwin Python
+      The dependencies are the same as in Windows.  Cygwin comes with 
+      packages for python-argparse, python-imaging, and python-numpy.
+      Unfortunately, scipy is apparently difficult to install in Cygwin.
+</pre>
+
+<p>Run 
+<code>python makeSpanningBackground --help</code>
+for the documentation.  The output of that command follows.</p>
+
+<pre>
+Usage: makeSpanningBackground [-h] -o OUTFILE [-v] [-1]
+                              [-f FITIMAGE FITIMAGE FITIMAGE]
+                              [-p PERCENTERROR] [-z ZOOMSPLINE] [-s]
+                              [-c COLORFILL COLORFILL COLORFILL] [-R] [-d]
+                              [--noclobber] [-r RESLIST [RESLIST ...]]
+                              [-w WINDOWS WINDOWS] [-x]
+                              imageFilesOrDirs [imageFilesOrDirs ...]
+
+Make a single, combined background image file from separate background image
+files, one for each display. The default is to get information from the system
+about the display resolutions, and to randomly choose an image for each
+display from the image files and image directories provided. 
+
+The positional arguments are image files and directories containing
+image files. The required flag '--outfile' or '-o' specifies the
+pathname of the file where the combined image file will be written (or
+silently overwritten). An example: 
+
+   python makeSpanningBackground ~/bgDir photo.jpg -o combo.bmp 
+
+On Linux the initial "python" above can be omitted if the Python
+version at "/usr/bin/python" is the correct one. The file (or a script
+calling it) can also be placed somewhere in the PATH to avoid having
+to supply a path. 
+
+To use this kind of combined background image in Linux the background
+mode should be set to 'spanned'; the program will attempt to set this
+automatically. On Windows the background mode should be 'tiled', but
+the mode must be explicitly set by the user (usually from the system's
+background-setting window). In Windows XP the .bmp format should be
+chosen for the output file (simply by using that suffix on the output
+filename). Also, backgrounds set in Windows XP do not persist between
+logins and must be reset. 
+
+Note that this program can be set as a startup program to change the
+background wallpaper on logins. To regularly change the wallpaper it
+can be scheduled to run as a cron job or scheduled task. A simpler
+command in Linux to change the background every hour (3600 secs) would
+be something like: 
+
+   while true; do nice makeSpanningBackground ~/Pics -o combo.bmp; sleep
+3600; done &amp; 
+
+On Linux it is useful to create a simple shell-script wrapper to call
+the program with the "usual" command-line arguments.
+
+
+Positional arguments:
+
+  imageFilesOrDirs      A whitespace-separated list of the pathnames of image
+                        files and/or directories containing image files. Use
+                        quotes around any file or directory name which
+                        contains a space. Files on the command line and in
+                        directories will be silently ignored unless they have
+                        a suffix in the list ['.BMP', '.DCX', '.DIB', '.EPS',
+                        '.GIF', '.IM', '.JPE', '.JPEG', '.JPG', '.PBM',
+                        '.PCD', '.PCX', '.PDF', '.PGM', '.PNG', '.PPM', '.PS',
+                        '.PSD', '.TIF', '.TIFF', '.XBM', '.XPM', '.bmp',
+                        '.dcx', '.dib', '.eps', '.gif', '.im', '.jpe',
+                        '.jpeg', '.jpg', '.pbm', '.pcd', '.pcx', '.pdf',
+                        '.pgm', '.png', '.ppm', '.ps', '.psd', '.tif',
+                        '.tiff', '.xbm', '.xpm'].
+
+
+Optional arguments:
+
+  -h, --help            Show this help message and exit.
+
+  -o OUTFILE, --outfile OUTFILE
+                        The pathname of the file to use for writing the output
+                        file. This flag is required. Any existing file by that
+                        name will be silently overwritten. The file can have
+                        any suffix that ndimage (via PIL) can handle, and it
+                        will be written in that format, but not all formats
+                        will necessarily be settable as background images. The
+                        usual choice is Jpeg, with the '.jpg' suffix.
+
+  -v, --verbose         Print more information about the program's actions and
+                        progress.
+
+  -1, --oneimage        Use a single background image, scaled to stretch over
+                        all the displays. This is currently based on the
+                        screen resolutions, not the physical sizes of the
+                        monitors (dpi).
+
+  -f FITIMAGE FITIMAGE FITIMAGE, --fitimage FITIMAGE FITIMAGE FITIMAGE
+                        If this option is set then images are scaled to fully
+                        fit into the corresponding display. The three
+                        arguments are RGB byte values specifying the color of
+                        any region not covered by an image. Use '-f 0 0 0' for
+                        black. The default program behavior without this
+                        switch is to use the minimum scaling to completely
+                        fill the display while preserving the aspect ratio.
+
+  -p PERCENTERROR, --percenterror PERCENTERROR
+                        The percentage of an image's area which is allowed to
+                        be cropped-out when scaling it to fit a display
+                        resolution. In fitimage mode it is the percent of non-
+                        image in the display area. In oneimage mode it is the
+                        percent of the image that does not fall onto any
+                        display. Set this option to zero for exact fit only.
+                        The program will exit with an error message if no
+                        suitable images can be found.
+
+  -z ZOOMSPLINE, --zoomspline ZOOMSPLINE
+                        Set the order of the spline used by ndimage to resize
+                        (zoom) images. The value can be from 0 to 5, with 3
+                        the default. Lower orders are faster, higher orders
+                        have better quality. (Also, for higher-quality images:
+                        output files in .bmp format are larger but tend to
+                        look better.)
+
+  -s, --sequential      Process images sequentially as listed in the
+                        positional arguments, with the files in any image
+                        directories forming alphabetical sublists. This can be
+                        used to force specific images to appear on specific
+                        displays. On Linux the ordering of the displays is the
+                        same as in xrandr. If you are unsure about the
+                        ordering, try some images and see where they end up.
+                        If display resolutions and offsets are explicitly set
+                        with '--reslist' and '--sequential' is set then the
+                        image files will corresponding one to one with the
+                        list of resolution specifiers.
+
+  -c COLORFILL COLORFILL COLORFILL, --colorfill COLORFILL COLORFILL COLORFILL
+                        The three arguments are RGB byte values specifying the
+                        color of any region in the large, combined image (a
+                        bounding-box on the displays) which is not covered by
+                        a display. Use '-c 0 0 0' for black.
+
+  -R, --recursive       Recursively search any supplied image directories for
+                        image files.
+
+  -d, --dontapply       Do not attempt to apply the created image as the
+                        working background image. The program will simply exit
+                        after writing the image file.
+
+  --noclobber           Never overwrite an existing file as the output
+                        file.
+
+  -r RESLIST [RESLIST ...], --reslist RESLIST [RESLIST ...]
+                        Set the resolutions and offsets to use. No system
+                        lookup will be attempted. This must be a space-
+                        separated list of strings of the form
+                        x*y+xOffset+yOffset (like in the output of xrandr on
+                        Linux), where xOffset and yOffset give the top-left
+                        position of the display and x and y are the display
+                        sizes (resolution). Like in X11, (0,0) is assumed to
+                        be at the top left of a bounding box on all the
+                        displays. For a Windows machine the top left of the
+                        primary display will also need to be defined, using
+                        the '--windows' option described below.
+
+  -w WINDOWS WINDOWS, --windows WINDOWS WINDOWS
+                        This option should only be necessary on a Windows
+                        machine when using the '--reslist' option. The two
+                        arguments x and y (in that order) should be set to the
+                        top left position of the primary display. This is
+                        necessary because, unlike X11, Windows assumes (0,0)
+                        is at the top left of the primary display. Other
+                        displays can then have negative locations. This
+                        program translates Windows positions so that all
+                        addresses are positive, with (0,0) at the top left of
+                        all the displays (which is how positions should be
+                        entered for the '--reslist' option). The program then
+                        corrects for this translation in a final step, which
+                        wraps the image into tiled mode relative to the
+                        primary display. This requires knowing the top left
+                        position of the primary display.
+
+  -x, --x11             Create an X11 type image even if Windows is detected
+                        as the OS. When this option is selected no final
+                        "modular wrap" will be applied to correct for the
+                        position of the primary display.
+
+The makeSpanningBackground program is Copyright (c) 2012 by Allen Barker.
+Released under the permissive MIT license.
+</pre>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">MakeSpanningBackground maintained by <a href="https://github.com/abarker">abarker</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
