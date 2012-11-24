@@ -136,10 +136,10 @@ class SelfFlushingOutstream:
 
 parser = argparse.ArgumentParser(description="""
 
-   Make a single, combined background image file from separate background image
+   ^^fMake a single, combined background image file from separate background image
    files, one for each display.  The default is to get information from the
    system about the display resolutions, and to randomly choose an image for
-   each display from the image files and image directories provided.
+   each display from the image files and image directories provided.^^f
    
    ^^n^^n^^fThe positional arguments are image files and directories containing
    image files.  The required flag '--outfile' or '-o' specifies the pathname

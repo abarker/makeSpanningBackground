@@ -62,10 +62,11 @@ Usage: makeSpanningBackground [-h] -o OUTFILE [-v] [-1]
                               [-w WINDOWS WINDOWS] [-x]
                               imageFilesOrDirs [imageFilesOrDirs ...]
 
-Make a single, combined background image file from separate background image
-files, one for each display. The default is to get information from the system
-about the display resolutions, and to randomly choose an image for each
-display from the image files and image directories provided. 
+Make a single, combined background image file from separate background
+image files, one for each display. The default is to get information
+from the system about the display resolutions, and to randomly choose
+an image for each display from the image files and image directories
+provided. 
 
 The positional arguments are image files and directories containing
 image files. The required flag '--outfile' or '-o' specifies the
@@ -74,16 +75,20 @@ silently overwritten). An example:
 
    python makeSpanningBackground ~/bgDir photo.jpg -o combo.bmp 
 
-On Linux the initial "python" above can be omitted if the Python
-version at "/usr/bin/python" is the correct one. The file (or a script
-calling it) can also be placed somewhere in the PATH to avoid having
-to supply a path. 
+On Linux the program file can be made executable and the initial
+"python" above can be omitted if the Python version at
+"/usr/bin/python" is the correct one (if not, the first line in the
+program can be modified). Windows users can achieve the same effect by
+renaming the script to have a '.py' suffix and making sure '.PY' is in
+the PATHEXT list. On any system the program file (or a script calling
+it) can be placed somewhere in the PATH to avoid having to supply the
+path. 
 
 To use this kind of combined background image in Linux the background
 mode should be set to 'spanned'; the program will attempt to set this
 automatically. On Windows the background mode should be 'tiled', but
 the mode must be explicitly set by the user (usually from the system's
-background-setting window). In Windows XP the .bmp format should be
+background-setting window). In Windows XP the '.bmp' format should be
 chosen for the output file (simply by using that suffix on the output
 filename). Also, backgrounds set in Windows XP do not persist between
 logins and must be reset. 
@@ -123,13 +128,15 @@ Optional arguments:
   -h, --help            Show this help message and exit.
 
   -o OUTFILE, --outfile OUTFILE
-                        The pathname of the file to use for writing the output
-                        file. This flag is required. Any existing file by that
-                        name will be silently overwritten. The file can have
-                        any suffix that ndimage (via PIL) can handle, and it
-                        will be written in that format, but not all formats
-                        will necessarily be settable as background images. The
-                        usual choice is Jpeg, with the '.jpg' suffix.
+                        The pathname of the output file. This flag is
+                        required. Any existing file by that name will be
+                        silently overwritten. The filename can have any suffix
+                        that ndimage (via PIL) can handle, and the output file
+                        will be written in that format. Not all formats will
+                        necessarily be settable as background images. Common
+                        choices are '.jpg' and '.bmp', where the latter
+                        produces files which are larger but of better quality.
+                        Note that Windows XP requires the '.bmp' format.
 
   -v, --verbose         Print more information about the program's actions and
                         progress.
@@ -151,19 +158,19 @@ Optional arguments:
   -p PERCENTERROR, --percenterror PERCENTERROR
                         The percentage of an image's area which is allowed to
                         be cropped-out when scaling it to fit a display
-                        resolution. In fitimage mode it is the percent of non-
-                        image in the display area. In oneimage mode it is the
-                        percent of the image that does not fall onto any
-                        display. Set this option to zero for exact fit only.
-                        The program will exit with an error message if no
-                        suitable images can be found.
+                        resolution. In '--fitimage' mode it is the percent of
+                        non-image in the display area. In '--oneimage' mode it
+                        is the percent of the image that does not fall onto
+                        any display. Set this option to zero for exact fit
+                        only. The program will exit with an error message if
+                        it cannot find enough suitable images.
 
   -z ZOOMSPLINE, --zoomspline ZOOMSPLINE
                         Set the order of the spline used by ndimage to resize
                         (zoom) images. The value can be from 0 to 5, with 3
                         the default. Lower orders are faster, higher orders
                         have better quality. (Also, for higher-quality images:
-                        output files in .bmp format are larger but tend to
+                        output files in '.bmp' format are larger but tend to
                         look better.)
 
   -s, --sequential      Process images sequentially as listed in the
@@ -231,4 +238,3 @@ Optional arguments:
 
 The makeSpanningBackground program is Copyright (c) 2012 by Allen Barker.
 Released under the permissive MIT license.
-
