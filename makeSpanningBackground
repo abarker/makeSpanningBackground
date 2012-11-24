@@ -149,19 +149,22 @@ parser = argparse.ArgumentParser(description="""
    ^^n^^n^^s^^s^^s^^fpython makeSpanningBackground ~/bgDir photo.jpg -o
    combo.bmp^^f
    
-   ^^n^^n^^fOn Linux the initial "python" above can be omitted if the Python
-   version at "/usr/bin/python" is the correct one.  The file (or a script
-   calling it) can also be placed somewhere in the PATH to avoid having to
-   supply a path.^^f
+   ^^n^^n^^fOn Linux the program file can be made executable and the initial
+   "python" above can be omitted if the Python version at "/usr/bin/python" is
+   the correct one (if not, the first line in the program can be modified).
+   Windows users can achieve the same effect by renaming the script to have a
+   '.py' suffix and making sure '.PY' is in the PATHEXT list.  On any system
+   the program file (or a script calling it) can be placed somewhere in the
+   PATH to avoid having to supply the path.^^f
 
    ^^n^^n^^fTo use this kind of combined background image in Linux the
    background mode should be set to 'spanned'; the program will attempt to set
    this automatically. On Windows the background mode should be 'tiled', but
    the mode must be explicitly set by the user (usually from the system's
-   background-setting window).  In Windows XP the .bmp format should be chosen
-   for the output file (simply by using that suffix on the output filename).
-   Also, backgrounds set in Windows XP do not persist between logins and must
-   be reset.^^f
+   background-setting window).  In Windows XP the '.bmp' format should be
+   chosen for the output file (simply by using that suffix on the output
+   filename).  Also, backgrounds set in Windows XP do not persist between
+   logins and must be reset.^^f
    
    ^^n^^n^^fNote that this program can be set as a startup program to change the
    background wallpaper on logins.  To regularly change the wallpaper it can be
@@ -189,11 +192,13 @@ parser.add_argument("imageFilesOrDirs", nargs="+", help="""
 
 parser.add_argument("-o", "--outfile", required=True, nargs=1, help="""
 
-   The pathname of the file to use for writing the output file.  This flag is
-   required.  Any existing file by that name will be silently overwritten.  The
-   file can have any suffix that ndimage (via PIL) can handle, and it will be
-   written in that format, but not all formats will necessarily be settable as
-   background images.  The usual choice is Jpeg, with the '.jpg' suffix.^^n""")
+   The pathname of the output file.  This flag is required.  Any existing file
+   by that name will be silently overwritten.  The filename can have any suffix
+   that ndimage (via PIL) can handle, and the output file will be written in
+   that format.  Not all formats will necessarily be settable as background
+   images.  Common choices are '.jpg' and '.bmp', where the latter produces
+   files which are larger but of better quality.  Note that Windows XP requires
+   the '.bmp' format.^^n""")
 
 parser.add_argument("-v", "--verbose", action="store_true", help="""
 
@@ -217,18 +222,18 @@ parser.add_argument("-f", "--fitimage", nargs=3, type=int, help="""
 parser.add_argument("-p", "--percenterror", nargs=1, type=float, help="""
 
    The percentage of an image's area which is allowed to be cropped-out when
-   scaling it to fit a display resolution.  In fitimage mode it is the percent
-   of non-image in the display area.  In oneimage mode it is the percent of the
-   image that does not fall onto any display.  Set this option to zero for
-   exact fit only.  The program will exit with an error message if no suitable
-   images can be found.^^n""")
+   scaling it to fit a display resolution.  In '--fitimage' mode it is the
+   percent of non-image in the display area.  In '--oneimage' mode it is the
+   percent of the image that does not fall onto any display.  Set this option
+   to zero for exact fit only.  The program will exit with an error message if
+   it cannot find enough suitable images.^^n""")
 
 parser.add_argument("-z", "--zoomspline", nargs=1, type=int, help="""
 
    Set the order of the spline used by ndimage to resize (zoom) images.  The
    value can be from 0 to 5, with 3 the default.  Lower orders are faster,
    higher orders have better quality.  (Also, for higher-quality images: output
-   files in .bmp format are larger but tend to look better.)^^n""")
+   files in '.bmp' format are larger but tend to look better.)^^n""")
 
 parser.add_argument("-s", "--sequential", action="store_true", help="""
 
