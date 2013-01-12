@@ -36,11 +36,13 @@ from __future__ import division, print_function
 import numpy as np
 import scipy as sp
 import scipy.ndimage
-import math, subprocess, os, os.path, glob, sys, re, random, time
+import math, subprocess, os, os.path, sys, re, random, time
 # import matplotlib.pyplot as plt # only needed for debugging, to view images
-import argparse, textwrap
 
-# Get some info related to the OS we're running on.
+#
+# Get info about the OS we're running on.
+#
+
 import platform
 pythonVersion = platform.python_version_tuple()
 systemOs = platform.system() # "Linux" or "Windows"; could also use os.name
@@ -52,6 +54,10 @@ if systemOs == "Windows":
 elif systemOs == "Linux":
    linuxVersion = platform.linux_distribution()
 
+#
+# Set up some basic image-processing stuff.
+#
+
 # These are the allowed image suffixes, which the PIL library (used by ndimage)
 # can read (these are the common ones, but it can read more).  Suffixes with
 # all uppercase are also accepted, but mixed-case is not.
@@ -60,7 +66,7 @@ allowedImageFileSuffixes = [".bmp", ".dib", ".dcx", ".eps", ".ps", ".gif",
       ".pgm", ".ppm", ".psd", ".tif", ".tiff", ".xbm", ".xpm"]
 
 allowedImageFileSuffixes += [ s.upper() for s in allowedImageFileSuffixes ]
-allowedImageFileSuffixes = set(allowedImageFileSuffixes) # for faster testing
+allowedImageFileSuffixes = set(allowedImageFileSuffixes) # make a set (faster)
 
 def hasImageSuffix(fname):
    extension = os.path.splitext(fname)[1]
@@ -77,6 +83,18 @@ def pathErrorExit(path, msg):
    print("Error in makeSpanningBackground related to this pathname:\n   "
          + path + "\n" + msg, file=sys.stderr)
    sys.exit(1)
+
+###############################################################################
+##
+## Begin command-line parsing routines and documentation.  
+##
+## Everything from here to the matching end comment could be a separate module,
+## but it is included here directly so that the program fits into a single file
+## (as a script).
+##
+###############################################################################
+
+import argparse, textwrap
 
 #
 # Define classes to allow redirecting sys.stdout and sys.stderr in order to
@@ -304,6 +322,35 @@ parser.add_argument("-x", "--x11", action="store_true", help="""
    option is selected no final "modular wrap" will be applied to correct for
    the position of the primary display.""")
 
+def parseCommandLineArguments():
+   """Main routine to call to execute the command parsing.  Returns an object
+   from argparse's parse_args() routine."""
+
+   # Redirect stdout and stderr to prettify help or usage output from argparse.
+   #global sys.stdout
+   #global sys.stderr
+   old_stdout = sys.stdout # save stdout
+   old_stderr = sys.stderr # save stderr
+   sys.stdout = RedirectHelp(sys.stdout) # redirect stdout to add postprocessor
+   sys.stderr = RedirectHelp(sys.stderr) # redirect stderr to add postprocessor
+
+   # Run the actual argument-parsing operation via argparse.
+   args = parser.parse_args()
+   
+   # The argparse class has finished its argument-processing, so now no more
+   # usage or help messages will be printed.  So restore stdout and stderr
+   # to their usual settings, except with self-flushing added.
+   sys.stdout = SelfFlushingOutstream(old_stdout)
+   sys.stderr = SelfFlushingOutstream(old_stderr)
+
+   return args
+
+###############################################################################
+##
+## End command-line parsing routines and documentation.  
+##
+###############################################################################
+
 #
 # The major functions.
 #
@@ -469,7 +516,6 @@ def getDisplayInfoWindows():
 
    return tuple(displayResList)
 
-#backgroundFilenamesRead = False # global flag, set when filenames read
 allBackgroundFiles = [] # global list of all the background files specified
 
 def getNextBackgroundImage(dispRes, dispResList):
@@ -489,9 +535,7 @@ def getNextBackgroundImage(dispRes, dispResList):
    def reloadBackgroundFiles():
       """Convert args.imageFilesOrDirs into the list allBackgroundFiles of
       image files.  Reset the list if it is already set."""
-      #global backgroundFilenamesRead # boolean to remember if list was read
       global allBackgroundFiles # global list of background filenames
-      #backgroundFilenamesRead = True
       allBackgroundFiles = []
       for imagePath in args.imageFilesOrDirs:
          # Make sure we didn't get passed a bad pathname.
@@ -520,12 +564,8 @@ def getNextBackgroundImage(dispRes, dispResList):
       allBackgroundFiles = [ fullpath(f) for f in allBackgroundFiles 
                                                       if hasImageSuffix(f) ]
    
-   # Read in the list of all background image files if it has not been done.
-   #if not backgroundFilenamesRead: reloadBackgroundFiles()
-   # TODO delete global backgroundFilenamesRead
-
-   # Create a list of indices to choose from, so we can remove bad candidates
-   # locally before finally modifying the global list.
+   # Create a local list of indices to choose from, so we can remove bad
+   # candidate-images locally before finally modifying the global list.
    backgroundIndices = list(range(len(allBackgroundFiles)))
    localResetDone = False
 
@@ -539,7 +579,8 @@ def getNextBackgroundImage(dispRes, dispResList):
             reloadBackgroundFiles()
             backgroundIndices = list(range(len(allBackgroundFiles)))
             if args.verbose:
-               print("Loading or reloading the list of image files.\n")
+               print("Loading or reloading the list of image files."
+                     "\nFound", len(allBackgroundFiles), "image filenames.\n")
       if args.sequential:
          fileIndex = backgroundIndices.pop(0)
       else:
@@ -835,6 +876,12 @@ def setImageAsCurrentWallpaper(imageFileName):
    if systemOs == "Linux":
 
       imageUrl = "file://" + imageFileName
+      # Use gconf-editor to see the keys that can be set for a schema, go to
+      #    / -> desktop -> gnome -> backgrounds
+      # and click on a keys (it will list the values at the bottom).
+      # There is also an option to gsettings to list the values, e.g.,
+      #    gsettings list-keys org.gnome.desktop.background
+      #    gsettings list-recursively org.gnome.desktop.background
       try:
          #os.system("GSETTINGS_BACKEND=dconf gsettings set "
          #          "org.gnome.desktop.background picture-options spanned")
@@ -884,25 +931,9 @@ def setImageAsCurrentWallpaper(imageFileName):
 
 if __name__ == "__main__":
    
-   # Redirect stdout and stderr to prettify help or usage output from argparse.
-   old_stdout = sys.stdout # save stdout
-   old_stderr = sys.stderr # save stderr
-   sys.stdout = RedirectHelp(sys.stdout) # redirect stdout to add postprocessor
-   sys.stderr = RedirectHelp(sys.stderr) # redirect stderr to add postprocessor
-
-   args = parser.parse_args() # call argparse to do its argument processing
-   
-   # The argparse class has finished its argument-processing, so now no usage or
-   # help messages will be printed.  So restore stdout and stderr to their usual
-   # settings, except with self-flushing added.
-   
-   sys.stdout = SelfFlushingOutstream(old_stdout)
-   sys.stderr = SelfFlushingOutstream(old_stderr)
-   
-   #
-   # Process some of the command-line arguments.
-   #
-   
+   # Parse the command-line arguments.
+   args = parseCommandLineArguments()
+      
    saveFileName = fullpath(args.outfile[0])
    extension = os.path.splitext(saveFileName)[1]
    if not extension in allowedImageFileSuffixes:
@@ -998,7 +1029,7 @@ if __name__ == "__main__":
       firstLoopCompleted = True
       if not args.timedelay: break
       if args.verbose: 
-         print("\n"+"-"*10, "Sleeping for", args.timedelay[0], "minutes.", "-"*30, "\n")
+         print("\n"+"-"*10, "Sleeping for", args.timedelay[0], "minutes.", "-"*30)
       time.sleep(args.timedelay[0]*60.0)
    
    if args.verbose: 
