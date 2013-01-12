@@ -327,8 +327,6 @@ def parseCommandLineArguments():
    from argparse's parse_args() routine."""
 
    # Redirect stdout and stderr to prettify help or usage output from argparse.
-   #global sys.stdout
-   #global sys.stderr
    old_stdout = sys.stdout # save stdout
    old_stderr = sys.stderr # save stderr
    sys.stdout = RedirectHelp(sys.stdout) # redirect stdout to add postprocessor
