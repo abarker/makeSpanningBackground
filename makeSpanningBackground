@@ -36,7 +36,7 @@ from __future__ import division, print_function
 import numpy as np
 import scipy as sp
 import scipy.ndimage
-import math, subprocess, os, os.path, sys, re, random, time
+import math, subprocess, os, os.path, sys, random, time
 # import matplotlib.pyplot as plt # only needed for debugging, to view images
 
 #
@@ -94,7 +94,7 @@ def pathErrorExit(path, msg):
 ##
 ###############################################################################
 
-import argparse, textwrap
+import argparse, textwrap, re
 
 #
 # Define classes to allow redirecting sys.stdout and sys.stderr in order to
@@ -345,7 +345,7 @@ def parseCommandLineArguments():
 
 ###############################################################################
 ##
-## End command-line parsing routines and documentation.  
+## End of command-line parsing routines and documentation.  
 ##
 ###############################################################################
 
