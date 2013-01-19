@@ -146,7 +146,7 @@ class RedirectHelp:
          st = re.sub("\n\s*\n", "^^p", st).split("^^p") # multi-new to para
          st = [ " ".join(s.split()) for s in st ] # multi-whites to single
          wrapper = textwrap.TextWrapper( # indent formatted paras 
-                                initial_indent=" "*5, subsequent_indent=" "*5)
+                   initial_indent=" "*5, subsequent_indent=" "*5, width=76)
          return "\n\n".join([ wrapper.fill(s) for s in st ]) # wrap each para
       # do the fill on all the fill sections
       prettyStr = re.sub(r"\^\^f.*?\^\^f", doFill, prettyStr, flags=re.DOTALL)
