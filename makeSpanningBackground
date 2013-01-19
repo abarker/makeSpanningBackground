@@ -84,7 +84,7 @@ def pathErrorExit(path, msg):
          + path + "\n" + msg, file=sys.stderr)
    sys.exit(1)
 
-###############################################################################
+################################################################################
 ##
 ## Begin command-line parsing routines and documentation.  
 ##
@@ -92,7 +92,16 @@ def pathErrorExit(path, msg):
 ## but it is included here directly so that the program fits into a single file
 ## (as a script).
 ##
-###############################################################################
+## General argparse reminders and warnings:
+##   1) Do not use unescaped percent signs in the documentation strings.
+##   2) Using nargs=1 causes the values to be placed in a list, default doesn't.
+##   3) First argument specified is the one which appears in the Usage message.
+##   4) The metavar kwarg sets the string for option's VALUES in Usage messages.
+##   5) With default values you can always assume some value is assigned.
+##   6) Use numargs=1 and default=[] to test on the var for whether or not, say,
+##      an int-valued option was selected at all (or check for value None).
+##
+################################################################################
 
 import argparse, textwrap, re
 
@@ -102,13 +111,17 @@ import argparse, textwrap, re
 # Also define a self-flushing output stream to avoid having to explicitly run
 # Python with the '-u' option in Cygwin windows.
 #
+# Note that the standard TextWrapper fill and wrap routines used in argparse
+# do not strip out multiple whitespace like many fill programs do.
+
+progName = "makeSpanningBackground"
 
 class RedirectHelp:
    """This class allows us to redirect stdout in order to prettify the output
    of argparse's help and usage messages (via a postprocessor).  The 
    postprocessor modifies a few text strings and adds the following directives:
-      ^^n          replaced with a newline
-      ^^s          replaced with a space
+      ^^n          replaced with a newline before ^^f format
+      ^^s          replaced with a space, correctly preserved by ^^f format
       ^^f ... ^^f  reformats all the text between the directives"""
    def __init__(self, outstream):
       """Will usually be passed sys.stdout or sys.stderr as an argument."""
@@ -120,16 +133,24 @@ class RedirectHelp:
             .replace("optional arguments:", "Optional arguments:^^n")
             .replace("show this help message and exit", 
                "Show this help message and exit.^^n")
-            .replace("makeSpanningBackground: error: too few arguments",
-               textwrap.fill("^^nError in arguments to makeSpanningBackground: "
-               "image source and output file arguments are required.^^n"))
-            .replace("^^n", "\n") # define ^^n as a metasymbol for a newline
-            .replace("^^s", " ") # define ^^s as a metasymbol for a space
+            .replace("%s: error: too few arguments" % progName,
+               textwrap.fill("^^nError in arguments to %s: "
+               "image source and output file arguments are required.^^n"
+               % progName))
+            .replace("^^n", "\n") # replace the ^^n metasymbols here
+            .replace("^^s", unicode(5809)) # define ^^s as Runic R.
             )
-      def doFill(matchObj): # fill function for regexp to apply to matches
-         wrapper = textwrap.TextWrapper()
-         return wrapper.fill(prettyStr[matchObj.start()+3:matchObj.end()-3])
+      def doFill(matchObj): 
+         """Fill function for regexp to apply to ^^f matches."""
+         st = prettyStr[matchObj.start()+3:matchObj.end()-3] # get substring
+         st = re.sub("\n\s*\n", "^^p", st).split("^^p") # multi-new to para
+         st = [ " ".join(s.split()) for s in st ] # multi-whites to single
+         wrapper = textwrap.TextWrapper( # indent formatted paras 
+                                initial_indent=" "*5, subsequent_indent=" "*5)
+         return "\n\n".join([ wrapper.fill(s) for s in st ]) # wrap each para
+      # do the fill on all the fill sections
       prettyStr = re.sub(r"\^\^f.*?\^\^f", doFill, prettyStr, flags=re.DOTALL)
+      prettyStr = prettyStr.replace(unicode(5809), " ") # Runic R back to space
       self.outstream.write(prettyStr)
       self.outstream.flush()
    def __getattr__(self, attr):
@@ -152,49 +173,57 @@ class SelfFlushingOutstream:
 # Define and document the command-line arguments and flags with argparse.
 #
 
-parser = argparse.ArgumentParser(description="""
+parser = argparse.ArgumentParser(
+                 formatter_class=argparse.RawDescriptionHelpFormatter,
+                 description=
+"""
+Description:
 
-   ^^fMake a single, combined background image file from separate background image
+^^f
+   Make a single, combined background image file from separate background image
    files, one for each display.  The default is to get information from the
    system about the display resolutions, and to randomly choose an image for
-   each display from the image files and image directories provided.^^f
+   each display from the image files and image directories provided.
    
-   ^^n^^n^^fThe positional arguments are image files and directories containing
-   image files.  The required flag '--outfile' or '-o' specifies the pathname
-   of the file where the combined image file will be written (or silently
-   overwritten).  An example:^^f
-   
-   ^^n^^n^^s^^s^^s^^fpython makeSpanningBackground ~/bgDir photo.jpg -o
-   combo.bmp^^f
-   
-   ^^n^^n^^fOn Linux the program file can be made executable and the initial
-   "python" above can be omitted if the Python version at "/usr/bin/python" is
-   the correct one (if not, the first line in the program can be modified).
+   The positional arguments are image files and directories containing image
+   files.  The required flag '--outfile' or '-o' specifies the pathname of the
+   file where the combined image file will be written (or silently
+   overwritten).  An example:
+^^f
+
+        python makeSpanningBackground ~/bgDir photo.jpg -o combo.bmp
+
+^^f
+   On Linux the program file can be made executable and the initial "python"
+   above can be omitted if the Python version at "/usr/bin/python" is the
+   correct one (if not, the first line in the program can be modified).
    Windows users can achieve the same effect by renaming the script to have a
    '.py' suffix and making sure '.PY' is in the PATHEXT list.  On any system
    the program file (or a script calling it) can be placed somewhere in the
-   PATH to avoid having to supply the path.^^f
+   PATH to avoid having to supply the path.
 
-   ^^n^^n^^fTo use this kind of combined background image in Linux the
-   background mode should be set to 'spanned'; the program will attempt to set
-   this automatically. On Windows the background mode should be 'tiled', but
-   the mode must be explicitly set by the user (usually from the system's
+   To use this kind of combined background image in Linux the background mode
+   should be set to 'spanned'; the program will attempt to set this
+   automatically.  On Windows the background mode should be 'tiled', but the
+   mode must be explicitly set by the user (usually from the system's
    background-setting window).  In Windows XP the '.bmp' format should be
    chosen for the output file (simply by using that suffix on the output
    filename).  Also, backgrounds set in Windows XP do not persist between
-   logins and must be reset.^^f
-   
-   ^^n^^n^^fNote that this program can be set as a startup program to change
-   the background wallpaper on logins.  When the '-t <minutes>' command switch
-   is used the program will infinitely loop, waiting for the specified number
-   of minutes between iterations.^^f
+   logins and must be reset.
+  
+   Note that this program can be set as a startup program to change the
+   background wallpaper on logins.  When the '-t <minutes>' command switch is
+   used the program will infinitely loop, waiting for the specified number of
+   minutes between iterations.
 
-   ^^n^^fIt is convenient to create a simple shell-script wrapper or batch
-   file to call the program with the "usual" command-line arguments.^^f^^n""",
+   It is convenient to create a simple shell-script wrapper or batch file to
+   call the program with the "usual" command-line arguments.
+^^f
+""",
    
-   epilog="""The makeSpanningBackground program is Copyright (c) 2012 by
-   Allen Barker.  Released under the permissive MIT license.
-   """)
+   epilog=
+"""The makeSpanningBackground program is Copyright (c) 2012 by Allen Barker.
+Released under the permissive MIT license.""")
 
 parser.add_argument("imageFilesOrDirs", nargs="+", help="""
 
@@ -343,11 +372,11 @@ def parseCommandLineArguments():
 
    return args
 
-###############################################################################
+################################################################################
 ##
 ## End of command-line parsing routines and documentation.  
 ##
-###############################################################################
+################################################################################
 
 #
 # The major functions.
