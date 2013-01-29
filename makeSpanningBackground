@@ -1,10 +1,31 @@
-#!/usr/bin/python
-#
-# Run
-#    makeSpanningBackround --help
-# to see the formatted documentation.  An example usage:
-#    makeSpanningBackground ~/backgroundDir -o outputImage.bmp
-#
+#!/usr/bin/env python
+"""
+
+makeSpanningBackground -- set the background wallpaper for multiple monitors
+
+A command-line application which sets the background wallpaper on multiple
+monitors.   By default the selected wallpapers will be automatically scaled,
+combined into a single, large image, and displayed as the background wallpaper
+on the active monitors.  There are many options available, including the option
+to set a time and regularly change the wallpapers.
+
+Run
+   makeSpanningBackround -h | more
+or
+   python makeSpanningBackground -h | more
+to see the formatted documentation.  
+
+An example usage:
+   makeSpanningBackground ~/backgroundDir -o outputImage.bmp
+
+Copyright (c) 2012 Allen Barker, released under the MIT license.
+Project web site: http://abarker.github.com/makeSpanningBackground
+Source code site: https://github.com/abarker/makeSpanningBackground
+See http://opensource.org/licenses/MIT or the file LICENSE in the
+source directory for the text of the license.
+
+"""
+
 # This program uses the Scipy image class ndimage for image processing.  See
 #    http://docs.scipy.org/doc/scipy/reference/tutorial/ndimage.html
 #
@@ -22,9 +43,6 @@
 # byte values.  In order to reduce confusion this current program also adopts
 # the ndimage convention.
 #
-# Copyright (c) 2012 Allen Barker.  
-# Released under MIT license, http://opensource.org/licenses/MIT
-
 # Future enhancements, maybe:
 # 1) Add the option to base scalings on physical sizes (available from xrandr).
 # 2) Have Windows switch to tiled mode automatically (not working in Win 7).
@@ -113,6 +131,7 @@ import argparse, textwrap, re
 #
 # Note that the standard TextWrapper fill and wrap routines used in argparse
 # do not strip out multiple whitespace like many fill programs do.
+#
 
 progName = "makeSpanningBackground"
 
@@ -120,9 +139,15 @@ class RedirectHelp:
    """This class allows us to redirect stdout in order to prettify the output
    of argparse's help and usage messages (via a postprocessor).  The 
    postprocessor modifies a few text strings and adds the following directives:
-      ^^n          replaced with a newline before ^^f format
+      ^^n          replaced with a newline (after any ^^f format)
       ^^s          replaced with a space, correctly preserved by ^^f format
-      ^^f ... ^^f  reformats all the text between the directives"""
+      \a           the bell control char is also replaced with preserved space
+      ^^f ... ^^f  reformats all the text between the directives
+   Formatting with ^^f converts any sequence of two or more newlines into a
+   single newline, i.e., a paragraph break.  Multiple whitespaces are converted
+   to a single white space, and the text in paragraphs is line-wrapped with
+   a new indent level.
+   """
    def __init__(self, outstream):
       """Will usually be passed sys.stdout or sys.stderr as an argument."""
       self.outstream = outstream
@@ -137,8 +162,7 @@ class RedirectHelp:
                textwrap.fill("^^nError in arguments to %s: "
                "image source and output file arguments are required.^^n"
                % progName))
-            .replace("^^n", "\n") # replace the ^^n metasymbols here
-            .replace("^^s", unicode(5809)) # define ^^s as Runic R.
+            .replace("^^s", "\a") # define ^^s as the bell control character
             )
       def doFill(matchObj): 
          """Fill function for regexp to apply to ^^f matches."""
@@ -150,7 +174,8 @@ class RedirectHelp:
          return "\n\n".join([ wrapper.fill(s) for s in st ]) # wrap each para
       # do the fill on all the fill sections
       prettyStr = re.sub(r"\^\^f.*?\^\^f", doFill, prettyStr, flags=re.DOTALL)
-      prettyStr = prettyStr.replace(unicode(5809), " ") # Runic R back to space
+      prettyStr = prettyStr.replace("\a", " ") # bell character back to space
+      prettyStr = prettyStr.replace("^^n", "\n") # replace ^^n with newline
       self.outstream.write(prettyStr)
       self.outstream.flush()
    def __getattr__(self, attr):
@@ -173,6 +198,8 @@ class SelfFlushingOutstream:
 # Define and document the command-line arguments and flags with argparse.
 #
 
+# TODO: add the metavar kwarg where it helps
+
 parser = argparse.ArgumentParser(
                  formatter_class=argparse.RawDescriptionHelpFormatter,
                  description=
@@ -189,11 +216,9 @@ Description:
    files.  The required flag '--outfile' or '-o' specifies the pathname of the
    file where the combined image file will be written (or silently
    overwritten).  An example:
-^^f
 
-        python makeSpanningBackground ~/bgDir photo.jpg -o combo.bmp
+   \a\a\apython makeSpanningBackground ~/bgDir photo.jpg -o combo.bmp
 
-^^f
    On Linux the program file can be made executable and the initial "python"
    above can be omitted if the Python version at "/usr/bin/python" is the
    correct one (if not, the first line in the program can be modified).
