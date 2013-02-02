@@ -1,4 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/python
+# Note that using the shebang "/usr/bin/env python" does not properly set the
+# Linux process name to makeSpanningBackground for things like ps, top, and
+# killall.
 """
 
 makeSpanningBackground -- set the background wallpaper for multiple monitors
