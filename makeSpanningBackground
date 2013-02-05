@@ -253,7 +253,7 @@ Description:
 """The makeSpanningBackground program is Copyright (c) 2012 by Allen Barker.
 Released under the permissive MIT license.""")
 
-parser.add_argument("imageFilesOrDirs", nargs="+", help="""
+parser.add_argument("image_file_or_dir", nargs="+", help="""
 
    A whitespace-separated list of the pathnames of image files and/or
    directories containing image files.  Use quotes around any file or directory
@@ -588,11 +588,11 @@ def getNextBackgroundImage(dispRes, dispResList):
    '--oneimage' option is selected."""
 
    def reloadBackgroundFiles():
-      """Convert args.imageFilesOrDirs into the list allBackgroundFiles of
+      """Convert args.image_file_or_dir into the list allBackgroundFiles of
       image files.  Reset the list if it is already set."""
       global allBackgroundFiles # global list of background filenames
       allBackgroundFiles = []
-      for imagePath in args.imageFilesOrDirs:
+      for imagePath in args.image_file_or_dir:
          # Make sure we didn't get passed a bad pathname.
          if not os.path.exists(imagePath):
             pathErrorExit(imagePath, "Path does not exist.")
