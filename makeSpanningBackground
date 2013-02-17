@@ -377,7 +377,13 @@ parser.add_argument("-x", "--x11", action="store_true", help="""
 
    Create an X11 type image even if Windows is detected as the OS.  When this
    option is selected no final "modular wrap" will be applied to correct for
-   the position of the primary display.""")
+   the position of the primary display.^^n""")
+
+parser.add_argument("-L", "--logcurrent", nargs=1, metavar="FNAME", help="""
+
+   Write the names of the current images to a file.  The single argument is the
+   name of the file to write the filenames to.  Useful when you want to know
+   the filenames of the images being displayed.""")
 
 def parseCommandLineArguments():
    """Main routine to call to execute the command parsing.  Returns an object
@@ -1049,6 +1055,7 @@ if __name__ == "__main__":
    
       # Select an image for each display.
       bgImages = []
+      bgImageNames = []
       for dispRes, count in zip(displayResList, range(len(displayResList))):
          image = getNextBackgroundImage(dispRes, displayResList)
          if not image:
@@ -1057,10 +1064,17 @@ if __name__ == "__main__":
             sys.exit(1)
          if args.verbose: 
             print("Image selected for display", count,"is\n   ", image[0], "\n")
-   
+         bgImageNames.append(image[0])
          bgImages.append(image[1])
          if args.oneimage: break
       
+      if args.logcurrent:
+         currentImagesLog = open(args.logcurrent[0], "w")
+         for count, img in enumerate(bgImageNames):
+            print("Image on display", count, "is\n   ", img, "\n",
+                  file=currentImagesLog)
+         currentImagesLog.close()
+
       # Make the large, combined image.
       giantImage = createGiantImage(bgImages,displayResList)
    
