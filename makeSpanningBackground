@@ -1,7 +1,7 @@
 #!/usr/bin/python
-# Note that using the shebang "/usr/bin/env python" does not properly set the
-# Linux process name to makeSpanningBackground for things like ps, top, and
-# killall.
+# Note that at least on Ubuntu 12.04 the shebang "/usr/bin/env python" does not
+# properly set the Linux process name to makeSpanningBackground for utilities
+# such as ps, top, and killall.
 """
 
 makeSpanningBackground -- set the background wallpaper for multiple monitors
@@ -9,8 +9,8 @@ makeSpanningBackground -- set the background wallpaper for multiple monitors
 A command-line application which sets the background wallpaper on multiple
 monitors.   By default the selected wallpapers will be automatically scaled,
 combined into a single, large image, and displayed as the background wallpaper
-on the active monitors.  There are many options available, including the option
-to set a time and regularly change the wallpapers.
+on the active monitors.  Many options are available, including the option to
+set a time and regularly change the wallpapers.
 
 Run
    makeSpanningBackround -h | more
@@ -30,13 +30,13 @@ source directory for the text of the license.
 """
 
 # This program uses the Scipy image class ndimage for image processing.  See
-#    http://docs.scipy.org/doc/scipy/reference/tutorial/ndimage.html
+# http://docs.scipy.org/doc/scipy/reference/tutorial/ndimage.html
 #
-# Note that the ndimages read-in by sp.ndimage.imread actually *are* Numpy
-# ndarray objects.  They are just interpreted as images and operated-on by the
-# ndimage functions.  RGB images can be treated as 2-D arrays of three-element
-# 1-D arrays (where the three elements store RGB value as unsigned bytes).  Or,
-# they can be treated as 3-D arrays of unsigned bytes (with the last dimension
+# Note that the ndimages read by sp.ndimage.imread actually *are* Numpy ndarray
+# objects.  They are just interpreted as images and operated-on by the ndimage
+# functions.  An RGB image can be treated as a 2-D array of three-element 1-D
+# arrays (where the three elements store RGB value as unsigned bytes).  Or, it
+# can be treated as a 3-D array of unsigned bytes (with the last dimension
 # indexing three "planes" for the color space).
 #
 # It is important to note that indexing on ndimages reverses the usual
@@ -66,12 +66,12 @@ import math, subprocess, os, os.path, sys, random, time
 
 import platform
 pythonVersion = platform.python_version_tuple()
-systemOs = platform.system() # "Linux" or "Windows"; could also use os.name
+systemOs = platform.system() # "Linux" or "Windows"; os.name would also work.
 
 if systemOs == "Windows":
    import ctypes # The ctypes package is included in Python 2.5 and higher.
    windowsVersion = platform.win32_ver()
-   yxPrimaryWindowOrigin = () # global, set by getDisplayInfoWindows():
+   yxPrimaryWindowOrigin = () # global tuple, set by getDisplayInfoWindows()
 elif systemOs == "Linux":
    linuxVersion = platform.linux_distribution()
 
@@ -94,14 +94,14 @@ def hasImageSuffix(fname):
    return extension in allowedImageFileSuffixes
 
 #
-# Some utility functions.
+# Some general utility functions.
 #
 
 def fullpath(path):
    return os.path.abspath(os.path.expanduser(path))
 
 def pathErrorExit(path, msg):
-   print("Error in makeSpanningBackground related to this pathname:\n   "
+   print("\nError in makeSpanningBackground related to this pathname:\n   "
          + path + "\n" + msg, file=sys.stderr)
    sys.exit(1)
 
@@ -253,7 +253,8 @@ Description:
 """The makeSpanningBackground program is Copyright (c) 2012 by Allen Barker.
 Released under the permissive MIT license.""")
 
-parser.add_argument("image_file_or_dir", nargs="+", help="""
+parser.add_argument("image_files_and_dirs", nargs="+", 
+      metavar="IMAGE_FILE_OR_DIR", help="""
 
    A whitespace-separated list of the pathnames of image files and/or
    directories containing image files.  Use quotes around any file or directory
@@ -262,7 +263,8 @@ parser.add_argument("image_file_or_dir", nargs="+", help="""
    silently ignored if it does not have a suffix in the list """ +
    str(sorted(list(allowedImageFileSuffixes))) + ".^^n")
 
-parser.add_argument("-o", "--outfile", required=True, nargs=1, help="""
+parser.add_argument("-o", "--outfile", required=True, nargs=1,
+      metavar="OUTFILE_NAME", help="""
 
    The pathname of the output file.  This flag is required.  Any existing file
    by that name will be silently overwritten.  The filename can have any suffix
@@ -283,7 +285,8 @@ parser.add_argument("-1", "--oneimage", action="store_true", help="""
    This is currently based on the screen resolutions, not the physical sizes of
    the monitors (dpi).^^n""")
 
-parser.add_argument("-f", "--fitimage", nargs=3, type=int, help="""
+parser.add_argument("-f", "--fitimage", nargs=3, type=int, 
+      metavar=("R_VAL","G_VAL","B_VAL"), help="""
 
    If this option is set then images are scaled to fully fit into the
    corresponding display.  The three arguments are RGB byte values specifying
@@ -292,17 +295,19 @@ parser.add_argument("-f", "--fitimage", nargs=3, type=int, help="""
    scaling to completely fill the display while preserving the aspect
    ratio.^^n""")
 
-parser.add_argument("-t", "--timedelay", nargs=1, type=float, help="""
+parser.add_argument("-t", "--timedelay", nargs=1, type=float, metavar="MINUTES",
+      help="""
 
    If this option is set the program will infinitely loop.  On each iteration
-   it will collect current display information, re-select images for each
-   display, create a combined image, and set it as the background (assuming no
-   other options modify that behavior).  The floating point argument gives the
-   number of minutes to sleep between iterations.  The image list will only be
-   reloaded when it becomes empty, so every image will be used exactly once
-   before any images are reloaded.^^n""")
+   it will collect the current display information, re-select images for each
+   display, create a combined image, and set it as the background (assuming
+   that behavior is not modified by any other options).  The floating point
+   argument gives the number of minutes to sleep between iterations.  The image
+   list will only be reloaded when it becomes empty, so every image will be
+   used exactly once before any images are reloaded.^^n""")
 
-parser.add_argument("-p", "--percenterror", nargs=1, type=float, help="""
+parser.add_argument("-p", "--percenterror", nargs=1, type=float, 
+      metavar="PCT_FLOAT", help="""
 
    The percentage of an image's area which is allowed to be cropped-out when
    scaling it to fit a display resolution.  In '--fitimage' mode it is the
@@ -311,7 +316,8 @@ parser.add_argument("-p", "--percenterror", nargs=1, type=float, help="""
    to zero for exact fit only.  The program will exit with an error message if
    it cannot find enough suitable images.^^n""")
 
-parser.add_argument("-z", "--zoomspline", nargs=1, type=int, help="""
+parser.add_argument("-z", "--zoomspline", nargs=1, type=int, 
+      metavar="ONE_OF_012345", help="""
 
    Set the order of the spline used by ndimage to resize (zoom) images.  The
    value can be from 0 to 5, with 3 the default.  Lower orders are faster,
@@ -329,7 +335,8 @@ parser.add_argument("-s", "--sequential", action="store_true", help="""
    '--sequential' is set then the image files will corresponding one to one
    with the list of resolution specifiers.^^n""")
 
-parser.add_argument("-c", "--colorfill", nargs=3, type=int, help="""
+parser.add_argument("-c", "--colorfill", nargs=3, type=int,
+      metavar=("R_VAL","G_VAL","B_VAL"), help="""
 
    The three arguments are RGB byte values specifying the color of any region
    in the large, combined image (a bounding-box on the displays) which is not
@@ -348,7 +355,7 @@ parser.add_argument("--noclobber", action="store_true", help="""
 
    Never overwrite an existing file as the output file.^^n""")
 
-parser.add_argument("-r", "--reslist", nargs="+", help="""
+parser.add_argument("-r", "--reslist", nargs="+", metavar="RESLIST", help="""
 
    Set the resolutions and offsets to use. No system lookup will be attempted.
    This must be a space-separated list of strings of the form
@@ -357,9 +364,11 @@ parser.add_argument("-r", "--reslist", nargs="+", help="""
    display sizes (resolution).  Like in X11, (0,0) is assumed to be at the top
    left of a bounding box on all the displays.  For a Windows machine the top
    left of the primary display will also need to be defined, using the
-   '--windows' option described below.^^n""")
+   '--windows' option described below.  This option cannot be immediately
+   followed by the positional arguments.^^n""")
 
-parser.add_argument("-w", "--windows", nargs=2, type=int, help="""
+parser.add_argument("-w", "--windows", nargs=2, type=int, 
+      metavar=("X_POS","Y_POS"), help="""
 
    This option should only be necessary on a Windows machine when using the
    '--reslist' option. The two arguments x and y (in that order) should be set
@@ -412,9 +421,11 @@ def parseCommandLineArguments():
 ##
 ################################################################################
 
+
 #
 # The major functions.
 #
+
 
 def getDisplayInfo():
    """OS-independent function call for getting display information."""
@@ -438,6 +449,7 @@ def getDisplayInfo():
             "\noption.  Assuming an 'xrandr' system and hoping for the best.", 
             file=sys.stderr)
       return getDisplayInfoLinux()
+
 
 def getDisplayInfoLinux():
    """Parse the output of xrandr to get the positions and resolutions of the
@@ -497,6 +509,7 @@ def getDisplayInfoLinux():
          displayResList.append(res)
    
    return tuple(tuple(i) for i in displayResList) # convert lists to tuples
+
 
 def getDisplayInfoWindows():
    """Get the display resolutions and offsets on a Windows system.  This is
@@ -577,6 +590,7 @@ def getDisplayInfoWindows():
 
    return tuple(displayResList)
 
+
 allBackgroundFiles = [] # global list of all the background files specified
 
 def getNextBackgroundImage(dispRes, dispResList):
@@ -594,11 +608,11 @@ def getNextBackgroundImage(dispRes, dispResList):
    '--oneimage' option is selected."""
 
    def reloadBackgroundFiles():
-      """Convert args.image_file_or_dir into the list allBackgroundFiles of
+      """Convert args.image_files_and_dirs into the list allBackgroundFiles of
       image files.  Reset the list if it is already set."""
       global allBackgroundFiles # global list of background filenames
       allBackgroundFiles = []
-      for imagePath in args.image_file_or_dir:
+      for imagePath in args.image_files_and_dirs:
          # Make sure we didn't get passed a bad pathname.
          if not os.path.exists(imagePath):
             pathErrorExit(imagePath, "Path does not exist.")
@@ -695,6 +709,7 @@ def getNextBackgroundImage(dispRes, dispResList):
 
    return (selectedFilename, bgImage)
 
+
 def copySubimage(yxExtents, fromImage, yxFromStart, toImage, yxToStart):
    """The arguments fromImage and toImage are both ndimages; the others are all
    ordered pairs of y, x positions or sizes.  Copy a subimage of size
@@ -732,6 +747,7 @@ def copySubimage(yxExtents, fromImage, yxFromStart, toImage, yxToStart):
    #             fromImage[y+yxFromStart[0]][x+yxFromStart[1]]
    return
 
+
 def correctWindowsOrigin(image):
    """Map an image to conform to Windows conventions (negative positions and
    tiled mode).  Uses the global variable yxPrimaryWindowOrigin to access the
@@ -767,6 +783,7 @@ def correctWindowsOrigin(image):
 
    return newImage
 
+
 def scaleImage(image, yxNew, zoomSpline):
    """Perform an exact scaling of image, to the int-valued (y,x) sizes in
    yxNew.  Note that the aspect ratio is not considered here; it should be
@@ -793,6 +810,7 @@ def scaleImage(image, yxNew, zoomSpline):
       if args.verbose and (scaledImage.shape[0], scaledImage.shape[1]) != yxNew:
          print("Warning: Imperfect scaling in zoom operation.")
    return scaledImage
+
 
 def calculateScaling(image, dispRes, dispResList):
    """Calculate the scaling of the image to fit a display with resolution
@@ -825,6 +843,7 @@ def calculateScaling(image, dispRes, dispResList):
 
    return (yxCurr, yxNew, fitimageOffsets, errFraction)
 
+
 def createGiantImage(imageList, dispResListArg):
    """Create and return the final giant image to set as the combined background
    image.  Each image in imageList is mapped to the corresponding display in
@@ -853,7 +872,7 @@ def createGiantImage(imageList, dispResListArg):
             "\nwhich is a bounding box on all the displays.")
    giantImage = np.empty((maxY,maxX,3), "uint8") # empty display-sized RGB image
 
-   # If oneimage option, reset the display list to have one large display.
+   # If oneimage option, reset the display list to represent one large display.
    if args.oneimage:
       dispResList = [(maxY,maxX,0,0)]
 
@@ -929,6 +948,7 @@ def createGiantImage(imageList, dispResListArg):
    #plt.show() # for debugging
    return giantImage
 
+
 def setImageAsCurrentWallpaper(imageFileName):
    """Set the file imageFileName to be a spanning background image (in either
    Linux or Windows)."""
@@ -976,8 +996,8 @@ def setImageAsCurrentWallpaper(imageFileName):
                ctypes.windll.user32.SystemParametersInfoW(SPI_SETDESKWALLPAPER,
                      0, image, SPIF_UPDATEINIFILE | SPIF_SENDWININICHANGE)
          except:
-            print("Error in makeSpanningBackground: Setting the background "
-                  "wallpaper failed.", file=sys.stderr)
+            print("\nError in makeSpanningBackground: Setting the background "
+                  "wallpaper failed.\n", file=sys.stderr)
       
       setBackground(imageFileName)
       
@@ -986,21 +1006,24 @@ def setImageAsCurrentWallpaper(imageFileName):
             "\nthe current background wallpaper.", file=sys.stderr)
    return
 
+
 #
 # The main code.
 #
+
 
 if __name__ == "__main__":
    
    # Parse the command-line arguments.
    args = parseCommandLineArguments()
       
+   # Set up the output file.
    saveFileName = fullpath(args.outfile[0])
    extension = os.path.splitext(saveFileName)[1]
    if not extension in allowedImageFileSuffixes:
       pathErrorExit(saveFileName, "No recognized image file suffix or"
             " extension on the specified output filename.")
-   (dirname, filename) = os.path.split(saveFileName)
+   dirname, filename = os.path.split(saveFileName)
    if not os.path.exists(dirname):
       pathErrorExit(saveFileName, "The specified directory for the output"
             " image file does not exist.")
@@ -1009,20 +1032,20 @@ if __name__ == "__main__":
       pathErrorExit(saveFileName, "The specified output pathname exists but"
             " is not a file.")
    
-   # Handle noclobber here, before possibly wasting time to create an image.
+   # Handle --noclobber here, before possibly wasting time to create an image.
    if args.noclobber and os.path.exists(saveFileName):
       print("\nWarning from makeSpanningBackground: The specified output"
             " file\n   " + args.outfile[0] + "\nalready exists.  No file was"
             " written due to the noclobber option.")
       sys.exit(0)
    
-   # Handle the zoomspline option and its default value.
+   # Handle the --zoomspline option and its default value.
    zoomSpline = 3
    if args.zoomspline:
       zoomSpline = args.zoomspline[0]
       if zoomSpline > 5 or zoomSpline < 0:
          print("\nError in makeSpanningBackground: The specified spline order\n"
-               + str(zoomSpline) + " is not in the range 0-5.")
+               + str(zoomSpline) + " is not in the range 0-5.\n")
          sys.exit(1)
    
    # Print a welcome message if the verbose option was chosen.
@@ -1047,7 +1070,7 @@ if __name__ == "__main__":
       if numDisplays == 0:
          print("\nError in makeSpanningBackground: No displays detected."
                "\nMaybe try explicitly setting the resolutions with the"
-               "\n'--reslist' option.")
+               "\n'--reslist' option.\n")
          sys.exit(1)
       if args.verbose: 
          print("\nDetected", numDisplays, "displays:\n   ", displayResList,
@@ -1060,7 +1083,7 @@ if __name__ == "__main__":
          image = getNextBackgroundImage(dispRes, displayResList)
          if not image:
             print("\nError in makeSpanningBackground: No suitable image files"
-                  "\nfound for display", str(count)+".", file=sys.stderr)
+                  "\nfound for display", str(count)+".\n", file=sys.stderr)
             sys.exit(1)
          if args.verbose: 
             print("Image selected for display", count,"is\n   ", image[0], "\n")
@@ -1103,4 +1126,5 @@ if __name__ == "__main__":
    
    if args.verbose: 
       print("\nFinished execution of makeSpanningBackground.")
-   
+  
+

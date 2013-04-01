@@ -24,8 +24,9 @@ The dependencies are as follows:
       Same as for Python 2.x.  For numpy and scipy just apt-get the version
       that starts with python3, e.g., python3-numpy.  The PIL library
       has not yet been officially ported (as of Nov, 2012), so you would 
-      need to get one of the unofficial 3.x versions of PIL working.
-      One version of the ported source code (needs compilation) is at 
+      need to get one of the unofficial 3.x versions of PIL working.  Recent
+      versions of Pillow, a fork of PIL, are said to work with Python 3.
+      One version of the ported PIL source code (needs compilation) is at 
       http://www.lfd.uci.edu/~gohlke/pythonlibs/#pil
       http://mail.python.org/pipermail/image-sig/2011-August/006843.html
 
@@ -48,9 +49,9 @@ The dependencies are as follows:
       packages for python-argparse, python-imaging, and python-numpy.
       Unfortunately, scipy is apparently difficult to install in Cygwin.
 
-Run 
+For the general documentation, run
    python makeSpanningBackground --help
-for the documentation.  The output of that command follows.
+The output of that command follows.
 
 ===============================================================================
 
