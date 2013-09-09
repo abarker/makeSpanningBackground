@@ -105,6 +105,10 @@ def pathErrorExit(path, msg):
          + path + "\n" + msg, file=sys.stderr)
    sys.exit(1)
 
+## TODO TODO TODO TODO
+## Define a separate list of replacement pairs, and replace below with now-modular
+## version from pdfCropMargins
+
 ################################################################################
 ##
 ## Begin command-line parsing routines and documentation.  
@@ -135,8 +139,6 @@ import argparse, textwrap, re
 # Note that the standard TextWrapper fill and wrap routines used in argparse
 # do not strip out multiple whitespace like many fill programs do.
 #
-
-progName = "makeSpanningBackground"
 
 class RedirectHelp:
    """This class allows us to redirect stdout in order to prettify the output
@@ -196,6 +198,33 @@ class SelfFlushingOutstream:
       self.outstream.flush()
    def __getattr__(self, attr):
       return getattr(self.outstream, attr)
+
+def parseCommandLineArguments():
+   """Main routine to call to execute the command parsing.  Returns an object
+   from argparse's parse_args() routine."""
+
+   # Redirect stdout and stderr to prettify help or usage output from argparse.
+   old_stdout = sys.stdout # save stdout
+   old_stderr = sys.stderr # save stderr
+   sys.stdout = RedirectHelp(sys.stdout) # redirect stdout to add postprocessor
+   sys.stderr = RedirectHelp(sys.stderr) # redirect stderr to add postprocessor
+
+   # Run the actual argument-parsing operation via argparse.
+   args = parser.parse_args()
+   
+   # The argparse class has finished its argument-processing, so now no more
+   # usage or help messages will be printed.  So restore stdout and stderr
+   # to their usual settings, except with self-flushing added.
+   sys.stdout = SelfFlushingOutstream(old_stdout)
+   sys.stderr = SelfFlushingOutstream(old_stderr)
+
+   return args
+
+################################################################################
+##
+## End of command-line parsing routines and documentation.  
+##
+################################################################################
 
 #
 # Define and document the command-line arguments and flags with argparse.
@@ -394,33 +423,23 @@ parser.add_argument("-L", "--logcurrent", nargs=1, metavar="FNAME", help="""
    name of the file to write the filenames to.  Useful when you want to know
    the filenames of the images being displayed.""")
 
-def parseCommandLineArguments():
-   """Main routine to call to execute the command parsing.  Returns an object
-   from argparse's parse_args() routine."""
+#
+# Define some prettifying modifications to the usual help output of argparse.
+#
 
-   # Redirect stdout and stderr to prettify help or usage output from argparse.
-   old_stdout = sys.stdout # save stdout
-   old_stderr = sys.stderr # save stderr
-   sys.stdout = RedirectHelp(sys.stdout) # redirect stdout to add postprocessor
-   sys.stderr = RedirectHelp(sys.stderr) # redirect stderr to add postprocessor
-
-   # Run the actual argument-parsing operation via argparse.
-   args = parser.parse_args()
-   
-   # The argparse class has finished its argument-processing, so now no more
-   # usage or help messages will be printed.  So restore stdout and stderr
-   # to their usual settings, except with self-flushing added.
-   sys.stdout = SelfFlushingOutstream(old_stdout)
-   sys.stderr = SelfFlushingOutstream(old_stderr)
-
-   return args
-
-################################################################################
-##
-## End of command-line parsing routines and documentation.  
-##
-################################################################################
-
+progName = "makeSpanningBackground" # Separate out string, in case it changes.
+helpStringReplacementPairs = (
+      ("usage: ", "^^nUsage: "),
+      ("positional arguments:", "Positional arguments:^^n"),
+      ("optional arguments:", "Optional arguments:^^n"),
+      ("show this help message and exit", 
+                                     "Show this help message and exit.^^n"),
+      ("%s: error: too few arguments" % progName,
+               textwrap.fill("^^nError in arguments to %s: "
+               "image source and output file arguments are required.^^n"
+               % progName)),
+      (progName + ": error:", "Error in "+progName+":")
+      )
 
 #
 # The major functions.
