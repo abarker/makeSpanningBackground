@@ -981,6 +981,15 @@ def setImageAsCurrentWallpaper(imageFileName):
    imageFileName = fullpath(imageFileName) # should already be a full path
 
    if systemOs == "Linux":
+      # TODO detect LXDE here
+
+      # TODO we can detect Gnome 2 versus Gnome 3 by running
+      #    gnome-session --version
+      # and checking the output.  For Gnome 2 the commands should be
+      #    gconftool-2 --type=string --set \
+      #          /desktop/gnome/background/picture_filename <pathnameToImage>
+      #    gconftool-2 --type=string --set \
+      #          /desktop/gnome/background/picture_options stretched 
 
       imageUrl = "file://" + imageFileName
       # Use gconf-editor to see the keys that can be set for a schema, go to
@@ -996,6 +1005,10 @@ def setImageAsCurrentWallpaper(imageFileName):
          #          "org.gnome.desktop.background picture-uri \""+imageUrl+"\"")
          currentEnv = os.environ.copy()
          currentEnv["GSETTINGS_BACKEND"] = "dconf"
+         currentEnv["DISPLAY"] = ":0" # if run from where DISPLAY isn't set.
+         subprocess.call(["gsettings", "set",
+            "org.gnome.settings-daemon.plugins.background", 
+            "active", "true"], env=currentEnv)
          subprocess.call(["gsettings", "set", "org.gnome.desktop.background", 
             "picture-options", "spanned"], env=currentEnv)
          subprocess.call(["gsettings", "set", "org.gnome.desktop.background", 
