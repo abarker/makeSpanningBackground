@@ -519,7 +519,10 @@ def getDisplayInfoLinux():
    for line in output:
       if len(line) < 2: continue # just in case format changes
       if line[1] == "connected":
-         if len(line) < 3: continue
+         try:
+            while not line[2][0].isdigit(): line = line[1:]
+         except IndexError:
+             continue
          res = line[2] # get string for display's resolution and offsets
          res = res.replace("+","x").split("x") # split, say, 1024x768+1024+0
          try: # see if res contains int resolution values
@@ -981,45 +984,72 @@ def setImageAsCurrentWallpaper(imageFileName):
    imageFileName = fullpath(imageFileName) # should already be a full path
 
    if systemOs == "Linux":
-      # TODO detect LXDE here
+      if args.verbose: print("\nSetting background on Linux OS.")
 
-      # TODO we can detect Gnome 2 versus Gnome 3 by running
-      #    gnome-session --version
-      # and checking the output.  For Gnome 2 the commands should be
-      #    gconftool-2 --type=string --set \
-      #          /desktop/gnome/background/picture_filename <pathnameToImage>
-      #    gconftool-2 --type=string --set \
-      #          /desktop/gnome/background/picture_options stretched 
+      currentEnv = os.environ.copy()
+      currentEnv["DISPLAY"] = ":0" # in case run from where DISPLAY isn't set
 
-      imageUrl = "file://" + imageFileName
-      # Use gconf-editor to see the keys that can be set for a schema, go to
-      #    / -> desktop -> gnome -> backgrounds
-      # and click on a keys (it will list the values at the bottom).
-      # There is also an option to gsettings to list the values, e.g.,
-      #    gsettings list-keys org.gnome.desktop.background
-      #    gsettings list-recursively org.gnome.desktop.background
-      try:
-         #os.system("GSETTINGS_BACKEND=dconf gsettings set "
-         #          "org.gnome.desktop.background picture-options spanned")
-         #os.system("GSETTINGS_BACKEND=dconf gsettings set "
-         #          "org.gnome.desktop.background picture-uri \""+imageUrl+"\"")
-         currentEnv = os.environ.copy()
-         currentEnv["GSETTINGS_BACKEND"] = "dconf"
-         currentEnv["DISPLAY"] = ":0" # if run from where DISPLAY isn't set.
-         subprocess.call(["gsettings", "set",
-            "org.gnome.settings-daemon.plugins.background", 
-            "active", "true"], env=currentEnv)
-         subprocess.call(["gsettings", "set", "org.gnome.desktop.background", 
-            "picture-options", "spanned"], env=currentEnv)
-         subprocess.call(["gsettings", "set", "org.gnome.desktop.background", 
-            "picture-uri", imageUrl], env=currentEnv)
-      except OSError as e:
-         print("\nError attempting to run 'gsettings'.  Be sure the program is"
-               "\ninstalled on your system.  The image was apparently created"
-               "\nbut there was an error in setting it as the background."
-               "\nThe system reported:\n", e, file=sys.stderr)
+      # Find out what window manager is currently in use.
+      currentWindowManager = currentEnv["XDG_CURRENT_DESKTOP"]
+      if args.verbose:
+         print("Desktop environment variable is XDG_CURRENT_DESKTOP =",
+               currentWindowManager)
+
+      if currentWindowManager == "LXDE":
+         # -w, --set-wallpaper=FILE   Set desktop wallpaper from image FILE
+         # --wallpaper-mode=MODE      MODE=(color|stretch|fit|center|tile)
+         try:
+            subprocess.call(["pcmanfm", "--set-wallpaper", imageFileName,
+               "--wallpaper-mode=fit"])
+         except OSError as e:
+            print("\nError attempting to run 'pcmanfm'.  Be sure the program"
+                  "\nis installed on your system.  The image was apparently"
+                  "\ncreated but there was an error in setting it as the"
+                  "\nbackground image")
+
+      elif currentWindowManager != "GNOME":
+         # Later more options may be added, but assume Gnome for now if not LXDE.
+         if args.verbose:
+            print("Assuming Gnome window manager and hoping for the best.")
+         currentWindowManager = "GNOME"
+
+      if currentWindowManager == "GNOME":
+         # TODO we can detect Gnome 2 versus Gnome 3 by running
+         #    gnome-session --version
+         # and checking the output.  For Gnome 2 the commands should be
+         #    gconftool-2 --type=string --set \
+         #          /desktop/gnome/background/picture_filename <pathnameToImage>
+         #    gconftool-2 --type=string --set \
+         #          /desktop/gnome/background/picture_options stretched 
+   
+         imageUrl = "file://" + imageFileName
+         # Use gconf-editor to see the keys that can be set for a schema, go to
+         #    / -> desktop -> gnome -> backgrounds
+         # and click on a keys (it will list the values at the bottom).
+         # There is also an option to gsettings to list the values, e.g.,
+         #    gsettings list-keys org.gnome.desktop.background
+         #    gsettings list-recursively org.gnome.desktop.background
+         try:
+            #os.system("GSETTINGS_BACKEND=dconf gsettings set "
+            #          "org.gnome.desktop.background picture-options spanned")
+            #os.system("GSETTINGS_BACKEND=dconf gsettings set "
+            #          "org.gnome.desktop.background picture-uri \""+imageUrl+"\"")
+            currentEnv["GSETTINGS_BACKEND"] = "dconf"
+            subprocess.call(["gsettings", "set",
+               "org.gnome.settings-daemon.plugins.background", 
+               "active", "true"], env=currentEnv)
+            subprocess.call(["gsettings", "set", "org.gnome.desktop.background", 
+               "picture-options", "spanned"], env=currentEnv)
+            subprocess.call(["gsettings", "set", "org.gnome.desktop.background", 
+               "picture-uri", imageUrl], env=currentEnv)
+         except OSError as e:
+            print("\nError attempting to run 'gsettings'.  Be sure the program is"
+                  "\ninstalled on your system.  The image was apparently created"
+                  "\nbut there was an error in setting it as the background."
+                  "\nThe system reported:\n", e, file=sys.stderr)
 
    elif systemOs == "Windows":
+      if args.verbose: print("\nSetting background on Windows OS.")
 
       #import ctypes # done at the top of the file
       SPI_SETDESKWALLPAPER = 0x14
