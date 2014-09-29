@@ -689,6 +689,42 @@ def getDisplayInfoWindows():
     return tuple(displayResList)
 
 
+def reloadBackgroundFiles():
+    """Return the list of paths corresponding to args.image_files_and_dirs
+    relative to the current state of the filesystem."""
+    allBackgroundFiles = []
+    for imagePath in args.image_files_and_dirs:
+        imagePath = os.path.expanduser(imagePath)
+        # Make sure we didn't get passed a bad pathname.
+        if not os.path.exists(imagePath):
+            pathErrorExit(imagePath, "Path does not exist.")
+
+        # Handle directories of images.
+        if os.path.isdir(imagePath):
+            for dirpath, dirnames, filenames in \
+                    os.walk(imagePath, followlinks=True):
+                dirnames.sort() # alphabetical recurse
+                filenames.sort() # alphabetical file ordering
+                filesInDir = [os.path.join(dirpath, f) for f in filenames]
+                allBackgroundFiles += filesInDir
+                if not args.recursive:
+                    break
+
+        # Handle individual image files (note symlinks are treated as files).
+        elif os.path.isfile(imagePath):
+            allBackgroundFiles.append(imagePath)
+
+        # Ignore if neither file nor directory unless has image suffix.
+        else:
+            if nameHasImageSuffix(imagePath):
+                pathErrorExit(imagePath, "Not a file or a directory.")
+
+    # Remove non-image files from list and expand to full pathnames.
+    allBackgroundFiles = [fullpath(f) for f in allBackgroundFiles
+                            if nameHasImageSuffix(f)]
+    return allBackgroundFiles
+
+
 allBackgroundFiles = [] # global list of all the background files specified
 
 
@@ -704,44 +740,9 @@ def getNextBackgroundImage(dispRes, dispResList):
     calculate the percent error in scaling when the '--percenterror' option is
     selected, and the list dispResList is used to calculate the error when the
     '--oneimage' option is selected."""
-
-    def reloadBackgroundFiles():
-        """Return the list of paths corresponding to args.image_files_and_dirs."""
-
-        allBackgroundFiles = []
-        for imagePath in args.image_files_and_dirs:
-            imagePath = os.path.expanduser(imagePath)
-            # Make sure we didn't get passed a bad pathname.
-            if not os.path.exists(imagePath):
-                pathErrorExit(imagePath, "Path does not exist.")
-
-            # Handle directories of images.
-            if os.path.isdir(imagePath):
-                for dirpath, dirnames, filenames in \
-                        os.walk(imagePath, followlinks=True):
-                    dirnames.sort() # alphabetical recurse
-                    filenames.sort() # alphabetical file ordering
-                    filesInDir = [os.path.join(dirpath, f) for f in filenames]
-                    allBackgroundFiles += filesInDir
-                    if not args.recursive:
-                        break
-
-            # Handle individual image files (note symlinks are treated as files).
-            elif os.path.isfile(imagePath):
-                allBackgroundFiles.append(imagePath)
-
-            # Ignore if neither file nor directory unless has image suffix.
-            else:
-                if nameHasImageSuffix(imagePath):
-                    pathErrorExit(imagePath, "Not a file or a directory.")
-
-        # Remove non-image files from list and expand to full pathnames.
-        allBackgroundFiles = [fullpath(f) for f in allBackgroundFiles
-                              if nameHasImageSuffix(f)]
-        return allBackgroundFiles
-
     # Create a local list of indices to choose from, so we can remove bad
     # candidate-images locally before finally modifying the global list.
+    global allBackgroundFiles # global list of background filenames
     backgroundIndices = list(range(len(allBackgroundFiles)))
     localResetDone = False
 
@@ -752,7 +753,6 @@ def getNextBackgroundImage(dispRes, dispResList):
                 return ()
             else: # reload the file list to search for a suitable image file
                 localResetDone = True
-                global allBackgroundFiles # global list of background filenames
                 allBackgroundFiles = reloadBackgroundFiles()
                 backgroundIndices = list(range(len(allBackgroundFiles)))
                 if args.verbose:
