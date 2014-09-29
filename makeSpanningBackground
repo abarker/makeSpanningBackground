@@ -311,7 +311,9 @@ Description:
    Make a single, combined background image file from separate background image
    files, one for each display.  The default is to get information from the
    system about the display resolutions, and to randomly choose an image for
-   each display from the image files and image directories provided.
+   each display from the image files and image directories provided.  Sampling
+   is without replacement; the full list is regenerated when it is empty
+   (including any changes which might have occurred in the directories).
 
    The positional arguments are image files and directories containing image
    files.  The required flag '--outfile' or '-o' specifies the pathname of the
@@ -703,13 +705,9 @@ def getNextBackgroundImage(dispRes, dispResList):
     selected, and the list dispResList is used to calculate the error when the
     '--oneimage' option is selected."""
 
-    # TODO: do tilde expansion on all filenames!!!!!!!!!!!!!!!
-
     def reloadBackgroundFiles():
-        # TODO: move this to own function to be called from main loop (pass list)
-        """Convert args.image_files_and_dirs into the list allBackgroundFiles of
-        image files.  Reset the list if it is already set."""
-        global allBackgroundFiles # global list of background filenames
+        """Return the list of paths corresponding to args.image_files_and_dirs."""
+
         allBackgroundFiles = []
         for imagePath in args.image_files_and_dirs:
             imagePath = os.path.expanduser(imagePath)
@@ -740,6 +738,7 @@ def getNextBackgroundImage(dispRes, dispResList):
         # Remove non-image files from list and expand to full pathnames.
         allBackgroundFiles = [fullpath(f) for f in allBackgroundFiles
                               if nameHasImageSuffix(f)]
+        return allBackgroundFiles
 
     # Create a local list of indices to choose from, so we can remove bad
     # candidate-images locally before finally modifying the global list.
@@ -753,7 +752,8 @@ def getNextBackgroundImage(dispRes, dispResList):
                 return ()
             else: # reload the file list to search for a suitable image file
                 localResetDone = True
-                reloadBackgroundFiles()
+                global allBackgroundFiles # global list of background filenames
+                allBackgroundFiles = reloadBackgroundFiles()
                 backgroundIndices = list(range(len(allBackgroundFiles)))
                 if args.verbose:
                     print("Loading or reloading the list of image files."
