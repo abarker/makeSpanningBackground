@@ -1085,6 +1085,16 @@ def setImageAsCurrentWallpaper(imageFileName):
                       "\ncreated but there was an error in setting it as the"
                       "\nbackground image")
 
+        elif currentWindowManager == "X-Cinnamon":
+            if args.verbose:
+                print("Detected Cinnamon window manager, using Gnome calls.")
+            currentWindowManager = "GNOME"
+
+        elif currentWindowManager == "Unity":
+            if args.verbose:
+                print("Detected Unity window manager, using Gnome calls.")
+            currentWindowManager = "GNOME"
+
         elif currentWindowManager != "GNOME":
             # Later more options may be added, but assume Gnome for now if not LXDE.
             if args.verbose:
