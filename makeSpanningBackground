@@ -123,7 +123,7 @@ allowedImageFileSuffixes += [s.upper() for s in allowedImageFileSuffixes]
 allowedImageFileSuffixes = set(allowedImageFileSuffixes) # use a set
 
 
-def hasImageSuffix(fname):
+def nameHasImageSuffix(fname):
     """Test whether file fname has an image suffix in the allowed list."""
     extension = os.path.splitext(fname)[1]
     return extension in allowedImageFileSuffixes
@@ -703,12 +703,16 @@ def getNextBackgroundImage(dispRes, dispResList):
     selected, and the list dispResList is used to calculate the error when the
     '--oneimage' option is selected."""
 
+    # TODO: do tilde expansion on all filenames!!!!!!!!!!!!!!!
+
     def reloadBackgroundFiles():
+        # TODO: move this to own function to be called from main loop (pass list)
         """Convert args.image_files_and_dirs into the list allBackgroundFiles of
         image files.  Reset the list if it is already set."""
         global allBackgroundFiles # global list of background filenames
         allBackgroundFiles = []
         for imagePath in args.image_files_and_dirs:
+            imagePath = os.path.expanduser(imagePath)
             # Make sure we didn't get passed a bad pathname.
             if not os.path.exists(imagePath):
                 pathErrorExit(imagePath, "Path does not exist.")
@@ -730,12 +734,12 @@ def getNextBackgroundImage(dispRes, dispResList):
 
             # Ignore if neither file nor directory unless has image suffix.
             else:
-                if hasImageSuffix(imagePath):
+                if nameHasImageSuffix(imagePath):
                     pathErrorExit(imagePath, "Not a file or a directory.")
 
         # Remove non-image files from list and expand to full pathnames.
         allBackgroundFiles = [fullpath(f) for f in allBackgroundFiles
-                              if hasImageSuffix(f)]
+                              if nameHasImageSuffix(f)]
 
     # Create a local list of indices to choose from, so we can remove bad
     # candidate-images locally before finally modifying the global list.
@@ -1169,6 +1173,7 @@ if __name__ == "__main__":
 
     # Set up the output file.
     saveFileName = fullpath(args.outfile[0])
+    os.path.expanduser(saveFileName) # tilde expansion
     extension = os.path.splitext(saveFileName)[1]
     if extension not in allowedImageFileSuffixes:
         pathErrorExit(saveFileName, "No recognized image file suffix or"
@@ -1214,7 +1219,7 @@ if __name__ == "__main__":
     firstLoopCompleted = False
     while True:
 
-        # Get the display information.
+        # Get the current display information.
         displayResList = getDisplayInfo()
         numDisplays = len(displayResList)
         if numDisplays == 0:
@@ -1229,6 +1234,7 @@ if __name__ == "__main__":
         # Select an image for each display.
         bgImages = []
         bgImageNames = []
+        # TODO use enumerate
         for dispRes, count in zip(displayResList, range(len(displayResList))):
             image = getNextBackgroundImage(dispRes, displayResList)
             if not image:
@@ -1243,7 +1249,8 @@ if __name__ == "__main__":
                 break
 
         if args.logcurrent:
-            currentImagesLog = open(args.logcurrent[0], "w")
+            expandedLogName = os.path.expanduser(args.logcurrent[0]) # tilde expand
+            currentImagesLog = open(expandedLogName, "w")
             for count, img in enumerate(bgImageNames):
                 print("Image on display", count, "is\n   ", img, "\n",
                       file=currentImagesLog)
