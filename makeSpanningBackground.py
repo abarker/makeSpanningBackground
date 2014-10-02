@@ -694,7 +694,8 @@ def reloadBackgroundFiles():
     relative to the current state of the filesystem."""
     allBackgroundFiles = []
     for imagePath in args.image_files_and_dirs:
-        imagePath = os.path.expanduser(imagePath)
+        imagePath = os.path.expanduser(imagePath) # tilde expand the path
+
         # Make sure we didn't get passed a bad pathname.
         if not os.path.exists(imagePath):
             pathErrorExit(imagePath, "Path does not exist.")
