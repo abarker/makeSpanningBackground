@@ -134,8 +134,11 @@ def nameHasImageSuffix(fname):
 #
 
 
-def fullpath(path):
-    """Expand to path to a full path."""
+def processPath(path):
+    """This removes any outer quotes, does an expanduser, and returns the
+    absolute path."""
+    if path.startswith('"') and path.endswith('"'): path = path[1:-1]
+    if path.startswith("'") and path.endswith("'"): path = path[1:-1]
     return os.path.abspath(os.path.expanduser(path))
 
 
@@ -144,6 +147,7 @@ def pathErrorExit(path, msg):
     print("\nError in makeSpanningBackground related to this pathname:\n   "
           + path + "\n" + msg, file=sys.stderr)
     sys.exit(1)
+
 
 ################################################################################
 ##
@@ -694,7 +698,7 @@ def reloadBackgroundFiles():
     relative to the current state of the filesystem."""
     allBackgroundFiles = []
     for imagePath in args.image_files_and_dirs:
-        imagePath = os.path.expanduser(imagePath) # tilde expand the path
+        imagePath = processPath(imagePath) # tilde expand the path
 
         # Make sure we didn't get passed a bad pathname.
         if not os.path.exists(imagePath):
@@ -721,7 +725,7 @@ def reloadBackgroundFiles():
                 pathErrorExit(imagePath, "Not a file or a directory.")
 
     # Remove non-image files from list and expand to full pathnames.
-    allBackgroundFiles = [fullpath(f) for f in allBackgroundFiles
+    allBackgroundFiles = [processPath(f) for f in allBackgroundFiles
                             if nameHasImageSuffix(f)]
     return allBackgroundFiles
 
@@ -1059,7 +1063,7 @@ def createGiantImage(imageList, dispResListArg):
 def setImageAsCurrentWallpaper(imageFileName):
     """Set the file imageFileName to be a spanning background image (in either
     Linux or Windows)."""
-    imageFileName = fullpath(imageFileName) # should already be a full path
+    imageFileName = processPath(imageFileName)
 
     if systemOs == "Linux":
         if args.verbose:
@@ -1183,8 +1187,7 @@ if __name__ == "__main__":
     args = parseCommandLineArguments(parser, helpStringReplacementPairs)
 
     # Set up the output file.
-    saveFileName = fullpath(args.outfile[0])
-    os.path.expanduser(saveFileName) # tilde expansion
+    saveFileName = processPath(args.outfile[0]) # make absolute, expand tilde
     extension = os.path.splitext(saveFileName)[1]
     if extension not in allowedImageFileSuffixes:
         pathErrorExit(saveFileName, "No recognized image file suffix or"
@@ -1260,7 +1263,8 @@ if __name__ == "__main__":
                 break
 
         if args.logcurrent:
-            expandedLogName = os.path.expanduser(args.logcurrent[0]) # tilde expand
+            expandedLogName = processPath(args.logcurrent[0]) # tilde expand
+            # TODO make sure this is not a directory first
             currentImagesLog = open(expandedLogName, "w")
             for count, img in enumerate(bgImageNames):
                 print("Image on display", count, "is\n   ", img, "\n",
