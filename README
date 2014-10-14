@@ -1,7 +1,5 @@
-
-I started this project as an exercise in using Scipy ndimages (which are
-actually Numpy arrays).  The program selects and sets the background wallpaper
-on multiple displays/monitors (and single monitors as well).
+Selects and sets the background wallpaper on multiple displays/monitors (and
+single monitors as well).
 
 The makeSpanningBackground program runs on both Linux and Windows versions of
 Python.  Most of the testing has been on one and two monitor systems with
@@ -9,6 +7,10 @@ Python 2.7 or 3.2, on Ubuntu and Windows 7, but Fedora and Windows XP have also
 had some testing.  Note that under KDE and Xfce on Linux the generated image
 will not be automatically set to be the wallpaper (with the "spanned" mode
 auto-set); you'll have to apply those settings by hand.
+
+As of Oct 2014 this program works on Cinnamon and Unity, at least, but Gnome
+and LXDE have been changing the way they handle background images so it may not
+work.
 
 The dependencies are as follows:
 
