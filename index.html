@@ -2,9 +2,9 @@
 <html>
 
   <head>
-    <meta charset='utf-8' />
-    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="MakeSpanningBackground : A command-line utility which creates a background wallpaper to span multiple displays/monitors and sets it as the current background." />
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="MakeSpanningBackground : A command-line utility which creates a background wallpaper to span multiple displays/monitors and sets it as the current background.">
 
     <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
@@ -31,12 +31,19 @@
     <!-- MAIN CONTENT -->
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
-        <p>The makeSpanningBackground program runs on both Linux and Windows versions of
+        <p>Selects and sets the background wallpaper on multiple displays/monitors (and
+single monitors as well).</p>
+
+<p>The makeSpanningBackground program runs on both Linux and Windows versions of
 Python.  Most of the testing has been on one and two monitor systems with
 Python 2.7 or 3.2, on Ubuntu and Windows 7, but Fedora and Windows XP have also
 had some testing.  Note that under KDE and Xfce on Linux the generated image
 will not be automatically set to be the wallpaper (with the "spanned" mode
 auto-set); you'll have to apply those settings by hand.</p>
+
+<p>As of Oct 2014 this program works on Cinnamon and Unity, at least, but Gnome
+and LXDE have been changing the way they handle background images so it may not
+work.</p>
 
 <p>The dependencies are as follows:</p>
 
@@ -53,8 +60,9 @@ auto-set); you'll have to apply those settings by hand.</p>
       Same as for Python 2.x.  For numpy and scipy just apt-get the version
       that starts with python3, e.g., python3-numpy.  The PIL library
       has not yet been officially ported (as of Nov, 2012), so you would 
-      need to get one of the unofficial 3.x versions of PIL working.
-      One version of the ported source code (needs compilation) is at 
+      need to get one of the unofficial 3.x versions of PIL working.  Recent
+      versions of Pillow, a fork of PIL, are said to work with Python 3.
+      One version of the ported PIL source code (needs compilation) is at 
       http://www.lfd.uci.edu/~gohlke/pythonlibs/#pil
       http://mail.python.org/pipermail/image-sig/2011-August/006843.html
 
@@ -78,9 +86,11 @@ auto-set); you'll have to apply those settings by hand.</p>
       Unfortunately, scipy is apparently difficult to install in Cygwin.
 </pre>
 
-<p>Run
-<code>python makeSpanningBackground --help</code>
-for the documentation.  The output of that command follows.</p>
+<p>For the general documentation, run</p>
+
+<p>python makeSpanningBackground --help</p>
+
+<p>The output of that command follows.</p>
 
 <pre>
 Usage: makeSpanningBackground [-h] -o OUTFILE [-v] [-1]
@@ -123,7 +133,7 @@ filename). Also, backgrounds set in Windows XP do not persist between
 logins and must be reset. 
 
 Note that this program can be set as a startup program to change the
-background wallpaper on logins. When the '-t' command switch
+background wallpaper on logins. When the '-t ' command switch
 is used the program will infinitely loop, waiting for the specified
 number of minutes between iterations.
 
@@ -278,6 +288,7 @@ Optional arguments:
 
 The makeSpanningBackground program is Copyright (c) 2012 by Allen Barker.
 Released under the permissive MIT license.
+
 </pre>
       </section>
     </div>
