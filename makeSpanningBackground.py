@@ -1,7 +1,8 @@
 #!/usr/bin/python
 # Note that at least on Ubuntu 12.04 the shebang "/usr/bin/env python" does not
-# properly set the Linux process name to makeSpanningBackground for utilities
-# such as ps, top, and killall.
+# properly set the Linux process name to "makeSpanningBackground" for utilities
+# such as ps, top, and killall (it is set to "python", which is difficult to
+# distinguish from other running apps).
 """
 
 makeSpanningBackground -- set the background wallpaper for multiple monitors
@@ -30,8 +31,8 @@ source directory for the text of the license.
 """
 
 # This program uses the Scipy image class ndimage for image processing.  It
-# could have used PIL (and ndimage depends on PIL), but it started as an
-# exercise in using numpy.  For detailed docs on ndimage, see
+# could have used PIL alone (scipy.ndimage depends on PIL), but it started as
+# an exercise in using numpy.  For detailed docs on ndimage, see
 # http://docs.scipy.org/doc/scipy/reference/tutorial/ndimage.html
 #
 # Note that the ndimages read by sp.ndimage.imread actually *are* Numpy ndarray
@@ -47,6 +48,7 @@ source directory for the text of the license.
 # the format returned by shape is (maxY, maxX, 3), where 3 is the depth of RGB
 # byte values.  In order to reduce confusion this current program also adopts
 # the ndimage convention.
+#
 #
 # Future enhancements, maybe:
 # 1) Add the option to base scalings on physical sizes (available from xrandr).
@@ -71,6 +73,7 @@ except ImportError:
     print("Could not import the Python Imaging Library (PIL)."
           "\nPIL must be installed to use this program.",
           file=sys.stderr)
+    sys.exit(1)
 # import matplotlib.pyplot as plt # only needed for debugging, to view images
 
 #
@@ -79,11 +82,12 @@ except ImportError:
 
 import platform
 pythonVersion = platform.python_version_tuple()
-systemOs = platform.system() # "Linux" or "Windows"; os.name would also work.
+systemOs = platform.system() # "Linux" or "Windows"
 
 if systemOs == "Windows":
     import ctypes # The ctypes package is included in Python 2.5 and higher.
     windowsVersion = platform.win32_ver()
+    windowsRelease = platform.release()
     yxPrimaryWindowOrigin = () # global tuple, set by getDisplayInfoWindows()
 elif systemOs == "Linux":
     linuxVersion = platform.linux_distribution()
@@ -93,34 +97,15 @@ elif systemOs == "Linux":
 #
 
 # These are the allowed image suffixes, which the PIL library (used by ndimage)
-# can read (these are the common ones, but it can read more).  Suffixes with
-# all uppercase are also accepted, but mixed-case is not.
+# can read (these are the common ones, but it can actually read more).
+# The same suffixes with all uppercase are also accepted, but mixed-case is not.
 allowedImageFileSuffixes = [
-    ".bmp",
-    ".dib",
-    ".dcx",
-    ".eps",
-    ".ps",
-    ".gif",
-    ".im",
-    ".jpg",
-    ".jpe",
-    ".jpeg",
-    ".pcd",
-    ".pcx",
-    ".pdf",
-    ".png",
-    ".pbm",
-    ".pgm",
-    ".ppm",
-    ".psd",
-    ".tif",
-    ".tiff",
-    ".xbm",
-    ".xpm"]
+    ".bmp", ".dib", ".dcx", ".eps", ".ps", ".gif", ".im", ".jpg", ".jpe",
+    ".jpeg", ".pcd", ".pcx", ".pdf", ".png", ".pbm", ".pgm", ".ppm", ".psd",
+    ".tif", ".tiff", ".xbm", ".xpm"]
 
 allowedImageFileSuffixes += [s.upper() for s in allowedImageFileSuffixes]
-allowedImageFileSuffixes = set(allowedImageFileSuffixes) # use a set
+allowedImageFileSuffixes = set(allowedImageFileSuffixes)
 
 
 def nameHasImageSuffix(fname):
@@ -143,7 +128,7 @@ def processPath(path):
 
 
 def pathErrorExit(path, msg):
-    """Exit the program due to a path error, printing message."""
+    """Exit the program due to a path error, printing a message."""
     print("\nError in makeSpanningBackground related to this pathname:\n   "
           + path + "\n" + msg, file=sys.stderr)
     sys.exit(1)
@@ -151,18 +136,18 @@ def pathErrorExit(path, msg):
 
 ################################################################################
 ##
-# Begin command-line parsing routines and documentation.
+# Begin command-line parsing routines and help-message documentation.
 ##
-# Everything from here to the matching end-comment could be a separate
-# module but it is included here directly so that the program fits into a
-# single file (as a script).
+# Everything from here down to the matching end-comment could be a separate
+# module but it is included directly so that the program fits into a
+# single file (as a simple-to-run script).
 ##
 # General argparse reminders and warnings:
 # 1) Do not use unescaped percent signs in the documentation strings.
 # 2) Using nargs=1 causes the values to be placed in a list, default doesn't.
 # 3) First argument specified is the one which appears in the Usage message.
 # 4) The metavar kwarg sets the string for option's VALUES in Usage messages.
-# 5) With default values you can always assume some value is assigned.
+# 5) With a default value set you can always assume some value is assigned.
 # 6) Use numargs=1 and default=[] to test on the var for whether or not, say,
 # an int-valued option was selected at all (or check for value None).
 ##
@@ -176,7 +161,7 @@ import re
 # Define classes to allow redirecting sys.stdout and sys.stderr in order to
 # postprocess (prettify) the help and usage messages from the argparse class.
 # Also define a self-flushing output stream to avoid having to explicitly run
-# Python with the '-u' option in Cygwin windows.
+# Python with the '-u' option in Cygwin terminals.
 #
 # Note that the standard TextWrapper fill and wrap routines used in argparse
 # do not strip out multiple whitespace like many fill programs do.
@@ -184,8 +169,7 @@ import re
 
 
 class RedirectHelp(object):
-
-    """This class allows us to redirect stdout in order to prettify the output
+    """This class redirects stdout in order to prettify the output
     of argparse's help and usage messages (via a postprocessor).  The
     postprocessor does a string replacement for all the pairs defined in the
     user-defined sequence helpStringReplacementPairs.  It also adds the following
@@ -197,8 +181,7 @@ class RedirectHelp(object):
     Formatting with ^^f converts any sequence of two or more newlines into a
     single newline, i.e., a paragraph break.  Multiple (non-preserved)
     whitespaces are converted to a single white space, and the text in
-    paragraphs is line-wrapped with a new indent level.
-    """
+    paragraphs is line-wrapped with a new indent level."""
 
     def __init__(self, outstream, helpStringReplacementPairs=(),
                  initIndent=5, subsIndent=5, lineWidth=76):
@@ -243,7 +226,6 @@ class RedirectHelp(object):
 
 
 class SelfFlushingOutstream(object):
-
     """This class allows stdout and stderr to be redefined so that they are
     automatically flushed after each write.  (The same thing can be achieved via
     the '-u' flag on the Python command line.)  This helps when running in
@@ -263,22 +245,16 @@ class SelfFlushingOutstream(object):
 
 def parseCommandLineArguments(argparseParser, helpStringReplacementPairs=(),
                               initIndent=5, subsIndent=5, lineWidth=76):
-    """Main routine to call to execute the command parsing.  Returns an object
-    from argparse's parse_args() routine."""
+    """Main routine to call to execute the command-line parsing.  Returns an
+    object from argparse's parse_args() routine."""
     # Redirect stdout and stderr to prettify help or usage output from argparse.
     old_stdout = sys.stdout # save stdout
     old_stderr = sys.stderr # save stderr
     sys.stdout = RedirectHelp(
-        sys.stdout,
-        helpStringReplacementPairs,
-        initIndent,
-        subsIndent,
+        sys.stdout, helpStringReplacementPairs, initIndent, subsIndent,
         lineWidth) # redirect stdout to add postprocessor
     sys.stderr = RedirectHelp(
-        sys.stderr,
-        helpStringReplacementPairs,
-        initIndent,
-        subsIndent,
+        sys.stderr, helpStringReplacementPairs, initIndent, subsIndent,
         lineWidth) # redirect stderr to add postprocessor
 
     # Run the actual argument-parsing operation via argparse.
@@ -516,7 +492,7 @@ helpStringReplacementPairs = (
 )
 
 #
-# The major functions.
+# Functions which do the real work.
 #
 
 
@@ -555,7 +531,7 @@ def getDisplayInfoLinux():
     # The multiple screens are essentially treated like one giant screen, with
     # the "origin" for each screen and the screens' resolutions determining the
     # layout within the giant screen.  Screens can essentially be arbitrarily
-    # arranged on the giant-screen canvas, like in display-settings programs.
+    # arranged on the giant-screen canvas (like in display-settings programs).
     # The origin of the giant screen is at the top, leftmost point.  We only
     # need to consider a bounding box containing all the smaller screens.
     #
@@ -611,13 +587,14 @@ def getDisplayInfoLinux():
 
 def getDisplayInfoWindows():
     """Get the display resolutions and offsets on a Windows system.  This is
-    based on http://code.activestate.com/recipes/460509/.  Note that several
-    classes and functions are defined inside this function since they are not
-    needed anywhere else (and this function is only run once per program
-    execution)."""
+    based on http://code.activestate.com/recipes/460509/, with modifications.
+    Note that several classes and functions are defined inside this function
+    since they are not needed anywhere else (and this function is only run once
+    per program execution)."""
 
-    # import ctypes # imported to the top of the file
-    user = ctypes.windll.user32
+    # import ctypes # imported at the top of the file
+    # windll seems to change to pydll in Cygwin python, for future
+    user = ctypes.windll.user32 
 
     class RECT(ctypes.Structure):
         _fields_ = [
@@ -639,6 +616,7 @@ def getDisplayInfoWindows():
 
     def get_monitors():
         retval = []
+        # WINFUNCTYPE seems change to CFUNCTYPE in Cygwin Python, for future
         CBFUNC = ctypes.WINFUNCTYPE(ctypes.c_int, ctypes.c_ulong, ctypes.c_ulong,
                                     ctypes.POINTER(RECT), ctypes.c_double)
 
@@ -649,7 +627,7 @@ def getDisplayInfoWindows():
             retval.append(data)
             return 1
         cbfunc = CBFUNC(cb)
-        # temp = user.EnumDisplayMonitors(0, 0, cbfunc, 0) # unused but in orig
+        temp = user.EnumDisplayMonitors(0, 0, cbfunc, 0) # unused var, side effect?
         return retval
 
     def monitor_areas():
@@ -661,7 +639,7 @@ def getDisplayInfoWindows():
             mi.cbSize = ctypes.sizeof(MONITORINFO)
             mi.rcMonitor = RECT() # the full monitor size
             mi.rcWork = RECT()    # the working area (minus toolbars, etc.)
-            # res = user.GetMonitorInfoA(hMonitor, ctypes.byref(mi)) # unused
+            res = user.GetMonitorInfoA(hMonitor, ctypes.byref(mi)) # unused var, side effect?
             data.append(mi.rcMonitor.dump())
             data.append(mi.rcWork.dump())
             retval.append(data)
@@ -1145,32 +1123,68 @@ def setImageAsCurrentWallpaper(imageFileName):
         if args.verbose:
             print("\nSetting background on Windows OS.")
 
-        # import ctypes # done at the top of the file
+        def setWallpaperMode():
+            """Set the wallpaper mode to tiled.  Code modified from
+            http://code.activestate.com/recipes/435877-change-the-wallpaper-under-windows/
+            """
+            if pythonVersion[0] == "2":
+                import _winreg
+                winreg = _winreg
+            else: import winreg
+
+            wallpaperStyle = '0'
+            tileWallpaper = '1' # use '0' for regular mode
+            try:
+                desktopKey = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
+                                             'Control Panel\\Desktop',
+                                             0,
+                                             winreg.KEY_SET_VALUE)
+                winreg.SetValueEx(desktopKey,
+                                   'WallpaperStyle',
+                                   0,
+                                   winreg.REG_SZ,
+                                   wallpaperStyle)
+                winreg.SetValueEx(desktopKey,
+                                   'TileWallpaper',
+                                   0,
+                                   winreg.REG_SZ,
+                                   tileWallpaper)
+                return True
+            except:
+                print("Warning: Exception encountered setting wallpaper mode",
+                      file=sys.stderr)
+                return False
+
+        # import ctypes # now done at the top of the file
         SPI_SETDESKWALLPAPER = 0x14
         SPIF_UPDATEINIFILE = 0X01
         SPIF_SENDWININICHANGE = 0X02
 
         def setBackground(image):
+            """Set the background wallpaper to display."""
             try:
-                if windowsVersion[0] == "XP":
-                    ctypes.windll.user32.SystemParametersInfoA(
+                if windowsRelease == "7" or windowsRelease == "Vista":
+                    ctypes.windll.user32.SystemParametersInfoW(
                         SPI_SETDESKWALLPAPER,
                         0,
                         image,
                         SPIF_UPDATEINIFILE | SPIF_SENDWININICHANGE)
-                else:
-                    ctypes.windll.user32.SystemParametersInfoW(
+                else: # XP, Windows 8
+                    ctypes.windll.user32.SystemParametersInfoA(
                         SPI_SETDESKWALLPAPER,
                         0,
                         image,
                         SPIF_UPDATEINIFILE | SPIF_SENDWININICHANGE)
             except: # don't know what types of exceptions this might give
                 print("\nError in makeSpanningBackground: Setting the background "
-                      "wallpaper failed.\n", file=sys.stderr)
+                      "wallpaper failed.", file=sys.stderr)
 
+        setWallpaperMode() # set to tiled mode
         setBackground(imageFileName)
 
     else:
+        # TODO consider Cygwin implementation, but scipy is a pain to install
+        # on Cygwin for now.
         print("\nSystem OS not recognized; not setting the generated image as"
               "\nthe current background wallpaper.", file=sys.stderr)
     return
