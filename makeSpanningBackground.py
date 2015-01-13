@@ -58,8 +58,15 @@ source directory for the text of the license.
 # 5) Allow URLs to image files as args (PIL can handle urllib-opened links).
 
 from __future__ import division, print_function
-import numpy as np
-import scipy as sp
+try:
+    import numpy as np
+    import scipy as sp
+except ImportError:
+    print("Error: pdfCropMargins requires that the SciPy and NumPy packages"
+          "\nboth be installed in Python.  There was an error on the import,"
+          "\nwhich suggests that at least one is missing.\n",
+          file=sys.stderr)
+    raise
 import scipy.ndimage # pyflakes gives error, but this is needed
 import subprocess
 import os
@@ -71,9 +78,9 @@ try:
     from PIL import Image
 except ImportError:
     print("Could not import the Python Imaging Library (PIL)."
-          "\nPIL must be installed to use this program.",
+          "\nPIL must be installed to use this program.\n",
           file=sys.stderr)
-    sys.exit(1)
+    raise
 # import matplotlib.pyplot as plt # only needed for debugging, to view images
 
 #
