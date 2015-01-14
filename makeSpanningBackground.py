@@ -307,7 +307,7 @@ Description:
    file where the combined image file will be written (or silently
    overwritten).  An example:
 
-   \a\a\apython makeSpanningBackground ~/bgDir photo.jpg -o combo.bmp
+   \a\a\apython makeSpanningBackground.py ~/bgDir photo.jpg -o combo.bmp
 
    On Linux the program file can be made executable and the initial "python"
    above can be omitted if the Python version at "/usr/bin/python" is the
@@ -484,7 +484,7 @@ parser.add_argument("-L", "--logcurrent", nargs=1, metavar="FNAME", help="""
 # Define some prettifying modifications to the usual help output of argparse.
 #
 
-progName = "makeSpanningBackground" # Separate out string, in case it changes.
+progName = "makeSpanningBackground.py" # Separate out string, in case it changes.
 helpStringReplacementPairs = (
     ("usage: ", "^^nUsage: "),
     ("positional arguments:", "Positional arguments:^^n"),

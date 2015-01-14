@@ -48,12 +48,12 @@ The dependencies are as follows:
       Unfortunately, scipy is apparently difficult to install in Cygwin.
 
 For the general documentation, run
-   python makeSpanningBackground --help
+   python makeSpanningBackground.py --help
 The output of that command follows.
 
 ===============================================================================
 
-Usage: makeSpanningBackground [-h] -o OUTFILE [-v] [-1]
+Usage: makeSpanningBackground.py [-h] -o OUTFILE [-v] [-1]
                               [-f FITIMAGE FITIMAGE FITIMAGE] [-t TIMEDELAY]
                               [-p PERCENTERROR] [-z ZOOMSPLINE] [-s]
                               [-c COLORFILL COLORFILL COLORFILL] [-R] [-d]
@@ -72,7 +72,7 @@ image files. The required flag '--outfile' or '-o' specifies the
 pathname of the file where the combined image file will be written (or
 silently overwritten). An example: 
 
-   python makeSpanningBackground ~/bgDir photo.jpg -o combo.bmp 
+   python makeSpanningBackground.py ~/bgDir photo.jpg -o combo.bmp 
 
 On Linux the program file can be made executable and the initial
 "python" above can be omitted if the Python version at
