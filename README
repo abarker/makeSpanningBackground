@@ -28,18 +28,19 @@ The dependencies are as follows:
       that starts with python3, e.g., python3-numpy.
 
    Windows with Python 2.x or 3.x (at least Python 2.6):
-      Needs numpy, scipy, and PIL.  Windows users who want binaries and are not
-      using a package like Python(x,y) where the dependencies are pre-installed
-      might try the following (get the version to match the installed Python):
+      Needs numpy, scipy, and PIL.  Windows users who want binaries and are
+      not using a package like Python(x,y) where the dependencies are
+      pre-installed might try the following (get the version to match the
+      installed Python):
 
       http://www.lfd.uci.edu/~gohlke/pythonlibs/#pil
       http://www.lfd.uci.edu/~gohlke/pythonlibs/#numpy
       http://www.lfd.uci.edu/~gohlke/pythonlibs/#scipy
 
       Note that on Windows the background mode must be set to "tiled" in the
-      standard wallpaper-selection dialog window.  The program will attempt to
-      do this, but if that doesn't work it will need to be set by the user.  On
-      XP you may need to always choose the .bmp format for the saved image
+      standard wallpaper-selection dialog window.  The program will attempt
+      to do this, but if that doesn't work it will need to be set by the user.
+      On XP you may need to always choose the .bmp format for the saved image
       files.
 
    Windows Cygwin Python
