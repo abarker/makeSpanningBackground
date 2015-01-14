@@ -1170,13 +1170,13 @@ def setImageAsCurrentWallpaper(imageFileName):
         def setBackground(image):
             """Set the background wallpaper to display."""
             try:
-                if windowsRelease == "7" or windowsRelease == "Vista":
+                if windowsRelease == "7":
                     ctypes.windll.user32.SystemParametersInfoW(
                         SPI_SETDESKWALLPAPER,
                         0,
                         image,
                         SPIF_UPDATEINIFILE | SPIF_SENDWININICHANGE)
-                else: # XP, Windows 8
+                else: # XP, Vista, Windows 8
                     ctypes.windll.user32.SystemParametersInfoA(
                         SPI_SETDESKWALLPAPER,
                         0,
