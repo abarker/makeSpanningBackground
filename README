@@ -10,7 +10,8 @@ generated image will not be automatically set to be the wallpaper (with the
 
 As of Oct 2014 this program works on Cinnamon and Unity, at least, but Gnome
 and LXDE have been changing the way they handle background images so it may not
-work.
+work.  There is now a Bash script in the bin directory which can be used as a
+simplified frontend to the full program on Linux systems.
 
 The dependencies are as follows:
 
