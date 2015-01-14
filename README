@@ -53,57 +53,60 @@ The output of that command follows.
 
 ===============================================================================
 
-Usage: makeSpanningBackground.py [-h] -o OUTFILE [-v] [-1]
-                              [-f FITIMAGE FITIMAGE FITIMAGE] [-t TIMEDELAY]
-                              [-p PERCENTERROR] [-z ZOOMSPLINE] [-s]
-                              [-c COLORFILL COLORFILL COLORFILL] [-R] [-d]
-                              [--noclobber] [-r RESLIST [RESLIST ...]]
-                              [-w WINDOWS WINDOWS] [-x]
-                              imageFilesOrDirs [imageFilesOrDirs ...]
+Usage: makeSpanningBackground.py [-h] -o OUTFILE_NAME [-v] [-1]
+                                 [-f R_VAL G_VAL B_VAL] [-t MINUTES]
+                                 [-p PCT_FLOAT] [-z ONE_OF_012345] [-s]
+                                 [-c R_VAL G_VAL B_VAL] [-R] [-d]
+                                 [--noclobber] [-r RESLIST [RESLIST ...]]
+                                 [-w X_POS Y_POS] [-x] [-L FNAME]
+                                 IMAGE_FILE_OR_DIR [IMAGE_FILE_OR_DIR ...]
 
-Make a single, combined background image file from separate background
-image files, one for each display. The default is to get information
-from the system about the display resolutions, and to randomly choose
-an image for each display from the image files and image directories
-provided. 
+Description:
 
-The positional arguments are image files and directories containing
-image files. The required flag '--outfile' or '-o' specifies the
-pathname of the file where the combined image file will be written (or
-silently overwritten). An example: 
+     Make a single, combined background image file from separate background
+     image files, one for each display. The default is to get information
+     from the system about the display resolutions, and to randomly choose
+     an image for each display from the image files and image directories
+     provided. Sampling is without replacement; the full list is regenerated
+     when it is empty (including any changes which might have occurred in
+     the directories).
 
-   python makeSpanningBackground.py ~/bgDir photo.jpg -o combo.bmp 
+     The positional arguments are image files and directories containing
+     image files. The required flag '--outfile' or '-o' specifies the
+     pathname of the file where the combined image file will be written (or
+     silently overwritten). An example:
 
-On Linux the program file can be made executable and the initial
-"python" above can be omitted if the Python version at
-"/usr/bin/python" is the correct one (if not, the first line in the
-program can be modified). Windows users can achieve the same effect by
-renaming the script to have a '.py' suffix and making sure '.PY' is in
-the PATHEXT list. On any system the program file (or a script calling
-it) can be placed somewhere in the PATH to avoid having to supply the
-path. 
+        python makeSpanningBackground.py ~/bgDir photo.jpg -o combo.bmp
 
-To use this kind of combined background image in Linux the background
-mode should be set to 'spanned'; the program will attempt to set this
-automatically. On Windows the background mode should be 'tiled', but
-the mode must be explicitly set by the user (usually from the system's
-background-setting window). In Windows XP the '.bmp' format should be
-chosen for the output file (simply by using that suffix on the output
-filename). Also, backgrounds set in Windows XP do not persist between
-logins and must be reset. 
+     On Linux the program file can be made executable and the initial
+     "python" above can be omitted if the Python version at
+     "/usr/bin/python" is the correct one (if not, the first line in the
+     program can be modified). Windows users can achieve the same effect by
+     renaming the script to have a '.py' suffix and making sure '.PY' is in
+     the PATHEXT list. On any system the program file (or a script calling
+     it) can be placed somewhere in the PATH to avoid having to supply the
+     path.
 
-Note that this program can be set as a startup program to change the
-background wallpaper on logins. When the '-t <minutes>' command switch
-is used the program will infinitely loop, waiting for the specified
-number of minutes between iterations.
+     To use this kind of combined background image in Linux the background
+     mode should be set to 'spanned'; the program will attempt to set this
+     automatically. On Windows the background mode should be 'tiled', but
+     the mode must be explicitly set by the user (usually from the system's
+     background-setting window). In Windows XP the '.bmp' format should be
+     chosen for the output file (simply by using that suffix on the output
+     filename). Also, backgrounds set in Windows XP do not persist between
+     logins and must be reset.
 
-It is convenient to create a simple shell-script wrapper or batch file
-to call the program with the "usual" command-line arguments.
+     Note that this program can be set as a startup program to change the
+     background wallpaper on logins. When the '-t <minutes>' command switch
+     is used the program will infinitely loop, waiting for the specified
+     number of minutes between iterations.
 
+     It is convenient to create a simple shell-script wrapper or batch file
+     to call the program with the "usual" command-line arguments.
 
 Positional arguments:
 
-  imageFilesOrDirs      A whitespace-separated list of the pathnames of image
+  IMAGE_FILE_OR_DIR     A whitespace-separated list of the pathnames of image
                         files and/or directories containing image files. Use
                         quotes around any file or directory name which
                         contains a space. Pathnames can be repeated on the
@@ -124,7 +127,7 @@ Optional arguments:
 
   -h, --help            Show this help message and exit.
 
-  -o OUTFILE, --outfile OUTFILE
+  -o OUTFILE_NAME, --outfile OUTFILE_NAME
                         The pathname of the output file. This flag is
                         required. Any existing file by that name will be
                         silently overwritten. The filename can have any suffix
@@ -144,7 +147,7 @@ Optional arguments:
                         screen resolutions, not the physical sizes of the
                         monitors (dpi).
 
-  -f FITIMAGE FITIMAGE FITIMAGE, --fitimage FITIMAGE FITIMAGE FITIMAGE
+  -f R_VAL G_VAL B_VAL, --fitimage R_VAL G_VAL B_VAL
                         If this option is set then images are scaled to fully
                         fit into the corresponding display. The three
                         arguments are RGB byte values specifying the color of
@@ -153,19 +156,19 @@ Optional arguments:
                         switch is to use the minimum scaling to completely
                         fill the display while preserving the aspect ratio.
 
-  -t TIMEDELAY, --timedelay TIMEDELAY
+  -t MINUTES, --timedelay MINUTES
                         If this option is set the program will infinitely
-                        loop. On each iteration it will collect current
+                        loop. On each iteration it will collect the current
                         display information, re-select images for each
                         display, create a combined image, and set it as the
-                        background (assuming no other options modify that
-                        behavior). The floating point argument gives the
-                        number of minutes to sleep between iterations. The
+                        background (assuming that behavior is not modified by
+                        any other options). The floating point argument gives
+                        the number of minutes to sleep between iterations. The
                         image list will only be reloaded when it becomes
                         empty, so every image will be used exactly once before
                         any images are reloaded.
 
-  -p PERCENTERROR, --percenterror PERCENTERROR
+  -p PCT_FLOAT, --percenterror PCT_FLOAT
                         The percentage of an image's area which is allowed to
                         be cropped-out when scaling it to fit a display
                         resolution. In '--fitimage' mode it is the percent of
@@ -175,7 +178,7 @@ Optional arguments:
                         only. The program will exit with an error message if
                         it cannot find enough suitable images.
 
-  -z ZOOMSPLINE, --zoomspline ZOOMSPLINE
+  -z ONE_OF_012345, --zoomspline ONE_OF_012345
                         Set the order of the spline used by ndimage to resize
                         (zoom) images. The value can be from 0 to 5, with 3
                         the default. Lower orders are faster, higher orders
@@ -195,7 +198,7 @@ Optional arguments:
                         image files will corresponding one to one with the
                         list of resolution specifiers.
 
-  -c COLORFILL COLORFILL COLORFILL, --colorfill COLORFILL COLORFILL COLORFILL
+  -c R_VAL G_VAL B_VAL, --colorfill R_VAL G_VAL B_VAL
                         The three arguments are RGB byte values specifying the
                         color of any region in the large, combined image (a
                         bounding-box on the displays) which is not covered by
@@ -222,9 +225,11 @@ Optional arguments:
                         be at the top left of a bounding box on all the
                         displays. For a Windows machine the top left of the
                         primary display will also need to be defined, using
-                        the '--windows' option described below.
+                        the '--windows' option described below. This option
+                        cannot be immediately followed by the positional
+                        arguments.
 
-  -w WINDOWS WINDOWS, --windows WINDOWS WINDOWS
+  -w X_POS Y_POS, --windows X_POS Y_POS
                         This option should only be necessary on a Windows
                         machine when using the '--reslist' option. The two
                         arguments x and y (in that order) should be set to the
@@ -246,6 +251,11 @@ Optional arguments:
                         "modular wrap" will be applied to correct for the
                         position of the primary display.
 
+  -L FNAME, --logcurrent FNAME
+                        Write the names of the current images to a file. The
+                        single argument is the name of the file to write the
+                        filenames to. Useful when you want to know the
+                        filenames of the images being displayed.
+
 The makeSpanningBackground program is Copyright (c) 2012 by Allen Barker.
 Released under the permissive MIT license.
-
