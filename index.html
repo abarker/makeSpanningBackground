@@ -32,18 +32,19 @@
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
         <p>Selects and sets the background wallpaper on multiple displays/monitors (and
-single monitors as well).</p>
+single monitors also).</p>
 
 <p>The makeSpanningBackground program runs on both Linux and Windows versions of
 Python.  Most of the testing has been on one and two monitor systems with
-Python 2.7 or 3.2, on Ubuntu and Windows 7, but Fedora and Windows XP have also
-had some testing.  Note that under KDE and Xfce on Linux the generated image
-will not be automatically set to be the wallpaper (with the "spanned" mode
-auto-set); you'll have to apply those settings by hand.</p>
+Python 2.7 or 3.X, on Ubuntu and Windows 7, but Fedora, Vista, and Windows XP
+have also had some testing.  Note that under KDE and Xfce on Linux the
+generated image will not be automatically set to be the wallpaper (with the
+"spanned" mode auto-set); you'll have to apply those settings by hand.</p>
 
 <p>As of Oct 2014 this program works on Cinnamon and Unity, at least, but Gnome
 and LXDE have been changing the way they handle background images so it may not
-work.</p>
+work.  There is now a Bash script in the bin directory which can be used as a
+simplified frontend to the full program on Linux systems.</p>
 
 <p>The dependencies are as follows:</p>
 
@@ -58,27 +59,23 @@ work.</p>
 
    Linux with Python 3.x:
       Same as for Python 2.x.  For numpy and scipy just apt-get the version
-      that starts with python3, e.g., python3-numpy.  The PIL library
-      has not yet been officially ported (as of Nov, 2012), so you would 
-      need to get one of the unofficial 3.x versions of PIL working.  Recent
-      versions of Pillow, a fork of PIL, are said to work with Python 3.
-      One version of the ported PIL source code (needs compilation) is at 
-      http://www.lfd.uci.edu/~gohlke/pythonlibs/#pil
-      http://mail.python.org/pipermail/image-sig/2011-August/006843.html
+      that starts with python3, e.g., python3-numpy.
 
    Windows with Python 2.x or 3.x (at least Python 2.6):
-      Needs numpy, scipy, and PIL.  Windows users who want binaries and are not
-      using a package like Python(x,y) where the dependencies are pre-installed
-      might try the following (get the version to match the installed Python):
+      Needs numpy, scipy, and PIL.  Windows users who want binaries and are
+      not using a package like Python(x,y) where the dependencies are
+      pre-installed might try the following (get the version to match the
+      installed Python):
 
       http://www.lfd.uci.edu/~gohlke/pythonlibs/#pil
       http://www.lfd.uci.edu/~gohlke/pythonlibs/#numpy
       http://www.lfd.uci.edu/~gohlke/pythonlibs/#scipy
 
-      Note that on Windows the background mode must be explicitly set to 
-      "tiled" in the standard wallpaper-selection dialog window.  Also,
-      on XP you may need to always choose the .bmp format for the saved
-      image files.
+      Note that on Windows the background mode must be set to "tiled" in the
+      standard wallpaper-selection dialog window.  The program will attempt
+      to do this, but if that doesn't work it will need to be set by the user.
+      On XP you may need to always choose the .bmp format for the saved image
+      files.
 
    Windows Cygwin Python
       The dependencies are the same as in Windows.  Cygwin comes with 
@@ -89,63 +86,67 @@ work.</p>
 <p>For the general documentation, run</p>
 
 <pre>
-   python makeSpanningBackground --help
+   python makeSpanningBackground.py --help
 </pre>
 
 <p>The output of that command follows.</p>
 
 <pre>
-Usage: makeSpanningBackground [-h] -o OUTFILE [-v] [-1]
-                              [-f FITIMAGE FITIMAGE FITIMAGE] [-t TIMEDELAY]
-                              [-p PERCENTERROR] [-z ZOOMSPLINE] [-s]
-                              [-c COLORFILL COLORFILL COLORFILL] [-R] [-d]
-                              [--noclobber] [-r RESLIST [RESLIST ...]]
-                              [-w WINDOWS WINDOWS] [-x]
-                              imageFilesOrDirs [imageFilesOrDirs ...]
 
-Make a single, combined background image file from separate background
-image files, one for each display. The default is to get information
-from the system about the display resolutions, and to randomly choose
-an image for each display from the image files and image directories
-provided. 
+Usage: makeSpanningBackground.py [-h] -o OUTFILE_NAME [-v] [-1]
+                                 [-f R_VAL G_VAL B_VAL] [-t MINUTES]
+                                 [-p PCT_FLOAT] [-z ONE_OF_012345] [-s]
+                                 [-c R_VAL G_VAL B_VAL] [-R] [-d]
+                                 [--noclobber] [-r RESLIST [RESLIST ...]]
+                                 [-w X_POS Y_POS] [-x] [-L FNAME]
+                                 IMAGE_FILE_OR_DIR [IMAGE_FILE_OR_DIR ...]
 
-The positional arguments are image files and directories containing
-image files. The required flag '--outfile' or '-o' specifies the
-pathname of the file where the combined image file will be written (or
-silently overwritten). An example: 
+Description:
 
-   python makeSpanningBackground ~/bgDir photo.jpg -o combo.bmp 
+     Make a single, combined background image file from separate background
+     image files, one for each display. The default is to get information
+     from the system about the display resolutions, and to randomly choose
+     an image for each display from the image files and image directories
+     provided. Sampling is without replacement; the full list is regenerated
+     when it is empty (including any changes which might have occurred in
+     the directories).
 
-On Linux the program file can be made executable and the initial
-"python" above can be omitted if the Python version at
-"/usr/bin/python" is the correct one (if not, the first line in the
-program can be modified). Windows users can achieve the same effect by
-renaming the script to have a '.py' suffix and making sure '.PY' is in
-the PATHEXT list. On any system the program file (or a script calling
-it) can be placed somewhere in the PATH to avoid having to supply the
-path. 
+     The positional arguments are image files and directories containing
+     image files. The required flag '--outfile' or '-o' specifies the
+     pathname of the file where the combined image file will be written (or
+     silently overwritten). An example:
 
-To use this kind of combined background image in Linux the background
-mode should be set to 'spanned'; the program will attempt to set this
-automatically. On Windows the background mode should be 'tiled', but
-the mode must be explicitly set by the user (usually from the system's
-background-setting window). In Windows XP the '.bmp' format should be
-chosen for the output file (simply by using that suffix on the output
-filename). Also, backgrounds set in Windows XP do not persist between
-logins and must be reset. 
+        python makeSpanningBackground.py ~/bgDir photo.jpg -o combo.bmp
 
-Note that this program can be set as a startup program to change the
-background wallpaper on logins. When the '-t ' command switch
-is used the program will infinitely loop, waiting for the specified
-number of minutes between iterations.
+     On Linux the program file can be made executable and the initial
+     "python" above can be omitted if the Python version at
+     "/usr/bin/python" is the correct one (if not, the first line in the
+     program can be modified). Windows users can achieve the same effect by
+     renaming the script to have a '.py' suffix and making sure '.PY' is in
+     the PATHEXT list. On any system the program file (or a script calling
+     it) can be placed somewhere in the PATH to avoid having to supply the
+     path.
 
-It is convenient to create a simple shell-script wrapper or batch file
-to call the program with the "usual" command-line arguments.
+     To use this kind of combined background image in Linux the background
+     mode should be set to 'spanned'; the program will attempt to set this
+     automatically. On Windows the background mode should be 'tiled', but
+     the mode must be explicitly set by the user (usually from the system's
+     background-setting window). In Windows XP the '.bmp' format should be
+     chosen for the output file (simply by using that suffix on the output
+     filename). Also, backgrounds set in Windows XP do not persist between
+     logins and must be reset.
 
+     Note that this program can be set as a startup program to change the
+     background wallpaper on logins. When the '-t ' command switch
+     is used the program will infinitely loop, waiting for the specified
+     number of minutes between iterations.
+
+     It is convenient to create a simple shell-script wrapper or batch file
+     to call the program with the "usual" command-line arguments.
 
 Positional arguments:
 
-  imageFilesOrDirs      A whitespace-separated list of the pathnames of image
+  IMAGE_FILE_OR_DIR     A whitespace-separated list of the pathnames of image
                         files and/or directories containing image files. Use
                         quotes around any file or directory name which
                         contains a space. Pathnames can be repeated on the
@@ -166,7 +167,7 @@ Optional arguments:
 
   -h, --help            Show this help message and exit.
 
-  -o OUTFILE, --outfile OUTFILE
+  -o OUTFILE_NAME, --outfile OUTFILE_NAME
                         The pathname of the output file. This flag is
                         required. Any existing file by that name will be
                         silently overwritten. The filename can have any suffix
@@ -186,7 +187,7 @@ Optional arguments:
                         screen resolutions, not the physical sizes of the
                         monitors (dpi).
 
-  -f FITIMAGE FITIMAGE FITIMAGE, --fitimage FITIMAGE FITIMAGE FITIMAGE
+  -f R_VAL G_VAL B_VAL, --fitimage R_VAL G_VAL B_VAL
                         If this option is set then images are scaled to fully
                         fit into the corresponding display. The three
                         arguments are RGB byte values specifying the color of
@@ -195,19 +196,19 @@ Optional arguments:
                         switch is to use the minimum scaling to completely
                         fill the display while preserving the aspect ratio.
 
-  -t TIMEDELAY, --timedelay TIMEDELAY
+  -t MINUTES, --timedelay MINUTES
                         If this option is set the program will infinitely
-                        loop. On each iteration it will collect current
+                        loop. On each iteration it will collect the current
                         display information, re-select images for each
                         display, create a combined image, and set it as the
-                        background (assuming no other options modify that
-                        behavior). The floating point argument gives the
-                        number of minutes to sleep between iterations. The
+                        background (assuming that behavior is not modified by
+                        any other options). The floating point argument gives
+                        the number of minutes to sleep between iterations. The
                         image list will only be reloaded when it becomes
                         empty, so every image will be used exactly once before
                         any images are reloaded.
 
-  -p PERCENTERROR, --percenterror PERCENTERROR
+  -p PCT_FLOAT, --percenterror PCT_FLOAT
                         The percentage of an image's area which is allowed to
                         be cropped-out when scaling it to fit a display
                         resolution. In '--fitimage' mode it is the percent of
@@ -217,7 +218,7 @@ Optional arguments:
                         only. The program will exit with an error message if
                         it cannot find enough suitable images.
 
-  -z ZOOMSPLINE, --zoomspline ZOOMSPLINE
+  -z ONE_OF_012345, --zoomspline ONE_OF_012345
                         Set the order of the spline used by ndimage to resize
                         (zoom) images. The value can be from 0 to 5, with 3
                         the default. Lower orders are faster, higher orders
@@ -237,7 +238,7 @@ Optional arguments:
                         image files will corresponding one to one with the
                         list of resolution specifiers.
 
-  -c COLORFILL COLORFILL COLORFILL, --colorfill COLORFILL COLORFILL COLORFILL
+  -c R_VAL G_VAL B_VAL, --colorfill R_VAL G_VAL B_VAL
                         The three arguments are RGB byte values specifying the
                         color of any region in the large, combined image (a
                         bounding-box on the displays) which is not covered by
@@ -264,9 +265,11 @@ Optional arguments:
                         be at the top left of a bounding box on all the
                         displays. For a Windows machine the top left of the
                         primary display will also need to be defined, using
-                        the '--windows' option described below.
+                        the '--windows' option described below. This option
+                        cannot be immediately followed by the positional
+                        arguments.
 
-  -w WINDOWS WINDOWS, --windows WINDOWS WINDOWS
+  -w X_POS Y_POS, --windows X_POS Y_POS
                         This option should only be necessary on a Windows
                         machine when using the '--reslist' option. The two
                         arguments x and y (in that order) should be set to the
@@ -288,9 +291,14 @@ Optional arguments:
                         "modular wrap" will be applied to correct for the
                         position of the primary display.
 
+  -L FNAME, --logcurrent FNAME
+                        Write the names of the current images to a file. The
+                        single argument is the name of the file to write the
+                        filenames to. Useful when you want to know the
+                        filenames of the images being displayed.
+
 The makeSpanningBackground program is Copyright (c) 2012 by Allen Barker.
 Released under the permissive MIT license.
-
 </pre>
       </section>
     </div>
