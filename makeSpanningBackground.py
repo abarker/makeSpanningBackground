@@ -14,13 +14,13 @@ on the active monitors.  Many options are available, including the option to
 set a time and regularly change the wallpapers.
 
 Run
-   makeSpanningBackround -h | more
+   makeSpanningBackround.py -h | more
 or
-   python makeSpanningBackground -h | more
+   python makeSpanningBackground.py -h | more
 to see the formatted documentation.
 
 An example usage:
-   makeSpanningBackground ~/backgroundDir -o outputImage.bmp
+   makeSpanningBackground.py ~/backgroundDir -o outputImage.bmp
 
 Copyright (c) 2012 Allen Barker, released under the MIT license.
 Project web site: http://abarker.github.com/makeSpanningBackground
