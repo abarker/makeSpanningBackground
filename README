@@ -1,12 +1,12 @@
 Selects and sets the background wallpaper on multiple displays/monitors (and
-single monitors as well).
+single monitors also).
 
 The makeSpanningBackground program runs on both Linux and Windows versions of
 Python.  Most of the testing has been on one and two monitor systems with
-Python 2.7 or 3.2, on Ubuntu and Windows 7, but Fedora and Windows XP have also
-had some testing.  Note that under KDE and Xfce on Linux the generated image
-will not be automatically set to be the wallpaper (with the "spanned" mode
-auto-set); you'll have to apply those settings by hand.
+Python 2.7 or 3.X, on Ubuntu and Windows 7, but Fedora, Vista, and Windows XP
+have also had some testing.  Note that under KDE and Xfce on Linux the
+generated image will not be automatically set to be the wallpaper (with the
+"spanned" mode auto-set); you'll have to apply those settings by hand.
 
 As of Oct 2014 this program works on Cinnamon and Unity, at least, but Gnome
 and LXDE have been changing the way they handle background images so it may not
@@ -24,13 +24,7 @@ The dependencies are as follows:
 
    Linux with Python 3.x:
       Same as for Python 2.x.  For numpy and scipy just apt-get the version
-      that starts with python3, e.g., python3-numpy.  The PIL library
-      has not yet been officially ported (as of Nov, 2012), so you would 
-      need to get one of the unofficial 3.x versions of PIL working.  Recent
-      versions of Pillow, a fork of PIL, are said to work with Python 3.
-      One version of the ported PIL source code (needs compilation) is at 
-      http://www.lfd.uci.edu/~gohlke/pythonlibs/#pil
-      http://mail.python.org/pipermail/image-sig/2011-August/006843.html
+      that starts with python3, e.g., python3-numpy.
 
    Windows with Python 2.x or 3.x (at least Python 2.6):
       Needs numpy, scipy, and PIL.  Windows users who want binaries and are not
@@ -41,10 +35,11 @@ The dependencies are as follows:
       http://www.lfd.uci.edu/~gohlke/pythonlibs/#numpy
       http://www.lfd.uci.edu/~gohlke/pythonlibs/#scipy
 
-      Note that on Windows the background mode must be explicitly set to 
-      "tiled" in the standard wallpaper-selection dialog window.  Also,
-      on XP you may need to always choose the .bmp format for the saved
-      image files.
+      Note that on Windows the background mode must be set to "tiled" in the
+      standard wallpaper-selection dialog window.  The program will attempt to
+      do this, but if that doesn't work it will need to be set by the user.  On
+      XP you may need to always choose the .bmp format for the saved image
+      files.
 
    Windows Cygwin Python
       The dependencies are the same as in Windows.  Cygwin comes with 
