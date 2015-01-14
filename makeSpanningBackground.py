@@ -319,20 +319,21 @@ Description:
 
    To use this kind of combined background image in Linux the background mode
    should be set to 'spanned'; the program will attempt to set this
-   automatically.  On Windows the background mode should be 'tiled', but the
-   mode must be explicitly set by the user (usually from the system's
-   background-setting window).  In Windows XP the '.bmp' format should be
-   chosen for the output file (simply by using that suffix on the output
-   filename).  Also, backgrounds set in Windows XP do not persist between
-   logins and must be reset.
+   automatically.  On Windows the background mode should be 'tiled'.  The
+   program will attempt to do this, but if that fails the mode must be
+   explicitly set by the user (usually from the system's background-setting
+   window).  In Windows XP the '.bmp' format should be chosen for the output
+   file (simply by using that suffix on the output filename).  Backgrounds set
+   in Windows XP do not persist between logins and must be reset.
 
-   Note that this program can be set as a startup program to change the
-   background wallpaper on logins.  When the '-t <minutes>' command switch is
-   used the program will infinitely loop, waiting for the specified number of
-   minutes between iterations.
+   This program can be set as a startup program to change the background
+   wallpaper on logins.  When the '-t <minutes>' command switch is used the
+   program will infinitely loop, waiting for the specified number of minutes
+   between iterations.
 
    It is convenient to create a simple shell-script wrapper or batch file to
-   call the program with the "usual" command-line arguments.
+   call the program with the "usual" command-line arguments.  One for Linux
+   is packaged with the program in the bin directory.
 ^^f
 """,
 
