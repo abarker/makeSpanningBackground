@@ -53,6 +53,8 @@ The dependencies are as follows:
       Unfortunately, scipy is apparently difficult to install in Cygwin.
       You can run the script with Windows Python from a Cygwin terminal.
 ```
+## Documentation
+
 For the general documentation, run
 ```
 python makeSpanningBackground.py --help
