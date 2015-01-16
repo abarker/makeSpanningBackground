@@ -1,3 +1,5 @@
+# makeSpanningBackground
+
 Selects and sets the background wallpaper on multiple displays/monitors (and
 single monitors also).
 
@@ -13,8 +15,10 @@ and LXDE have been changing the way they handle background images so it may not
 work.  There is now a Bash script in the bin directory which can be used as a
 simplified frontend to the full program on Linux systems.
 
-The dependencies are as follows:
+## Dependencies
 
+The dependencies are as follows:
+```
    Linux with Python 2.x (at least Python 2.6):
                    Ubuntu                               Fedora
       numpy       sudo apt-get install python-numpy    yum install numpy
@@ -47,13 +51,13 @@ The dependencies are as follows:
       The dependencies are the same as in Windows.  Cygwin comes with 
       packages for python-argparse, python-imaging, and python-numpy.
       Unfortunately, scipy is apparently difficult to install in Cygwin.
-
+```
 For the general documentation, run
-   python makeSpanningBackground.py --help
+```
+python makeSpanningBackground.py --help
+```
 The output of that command follows.
-
-===============================================================================
-
+```
 Usage: makeSpanningBackground.py [-h] -o OUTFILE_NAME [-v] [-1]
                                  [-f R_VAL G_VAL B_VAL] [-t MINUTES]
                                  [-p PCT_FLOAT] [-z ONE_OF_012345] [-s]
@@ -260,3 +264,4 @@ Optional arguments:
 
 The makeSpanningBackground program is Copyright (c) 2012 by Allen Barker.
 Released under the permissive MIT license.
+```
