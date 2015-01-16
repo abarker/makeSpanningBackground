@@ -31,7 +31,10 @@
     <!-- MAIN CONTENT -->
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
-        <p>Selects and sets the background wallpaper on multiple displays/monitors (and
+        <h1>
+<a id="makespanningbackground" class="anchor" href="#makespanningbackground" aria-hidden="true"><span class="octicon octicon-link"></span></a>makeSpanningBackground</h1>
+
+<p>Selects and sets the background wallpaper on multiple displays/monitors (and
 single monitors also).</p>
 
 <p>The makeSpanningBackground program runs on both Linux and Windows versions of
@@ -46,10 +49,12 @@ and LXDE have been changing the way they handle background images so it may not
 work.  There is now a Bash script in the bin directory which can be used as a
 simplified frontend to the full program on Linux systems.</p>
 
+<h2>
+<a id="dependencies" class="anchor" href="#dependencies" aria-hidden="true"><span class="octicon octicon-link"></span></a>Dependencies</h2>
+
 <p>The dependencies are as follows:</p>
 
-<pre>
-   Linux with Python 2.x (at least Python 2.6):
+<pre><code>   Linux with Python 2.x (at least Python 2.6):
                    Ubuntu                               Fedora
       numpy       sudo apt-get install python-numpy    yum install numpy
       scipy       sudo apt-get install python-scipy    yum install scipy
@@ -81,19 +86,20 @@ simplified frontend to the full program on Linux systems.</p>
       The dependencies are the same as in Windows.  Cygwin comes with 
       packages for python-argparse, python-imaging, and python-numpy.
       Unfortunately, scipy is apparently difficult to install in Cygwin.
-</pre>
+      You can run the script with Windows Python from a Cygwin terminal.
+</code></pre>
+
+<h2>
+<a id="documentation" class="anchor" href="#documentation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Documentation</h2>
 
 <p>For the general documentation, run</p>
 
-<pre>
-   python makeSpanningBackground.py --help
-</pre>
+<pre><code>python makeSpanningBackground.py --help
+</code></pre>
 
 <p>The output of that command follows.</p>
 
-<pre>
-
-Usage: makeSpanningBackground.py [-h] -o OUTFILE_NAME [-v] [-1]
+<pre><code>Usage: makeSpanningBackground.py [-h] -o OUTFILE_NAME [-v] [-1]
                                  [-f R_VAL G_VAL B_VAL] [-t MINUTES]
                                  [-p PCT_FLOAT] [-z ONE_OF_012345] [-s]
                                  [-c R_VAL G_VAL B_VAL] [-R] [-d]
@@ -137,7 +143,7 @@ Description:
      logins and must be reset.
 
      Note that this program can be set as a startup program to change the
-     background wallpaper on logins. When the '-t ' command switch
+     background wallpaper on logins. When the '-t &lt;minutes&gt;' command switch
      is used the program will infinitely loop, waiting for the specified
      number of minutes between iterations.
 
@@ -299,7 +305,7 @@ Optional arguments:
 
 The makeSpanningBackground program is Copyright (c) 2012 by Allen Barker.
 Released under the permissive MIT license.
-</pre>
+</code></pre>
       </section>
     </div>
 
