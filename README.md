@@ -51,6 +51,7 @@ The dependencies are as follows:
       The dependencies are the same as in Windows.  Cygwin comes with 
       packages for python-argparse, python-imaging, and python-numpy.
       Unfortunately, scipy is apparently difficult to install in Cygwin.
+      You can run the script with Windows Python from a Cygwin terminal.
 ```
 For the general documentation, run
 ```
