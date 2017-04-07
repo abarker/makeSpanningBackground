@@ -7,7 +7,7 @@ The makeSpanningBackground program runs on both Linux and Windows versions of
 Python.  Most of the testing has been on one and two monitor systems with
 Python 2.7 or 3.X, on Ubuntu and Windows 7, but Fedora, Vista, and Windows XP
 have also had some testing.  Note that under KDE and Xfce on Linux the
-generated image will not be automatically set to be the wallpaper (with the
+generated image may not be automatically set to be the wallpaper (with the
 "spanned" mode auto-set); you'll have to apply those settings by hand.
 
 As of Oct 2014 this program works on Cinnamon and Unity, at least, but Gnome
@@ -32,8 +32,8 @@ The dependencies are as follows:
       that starts with python3, e.g., python3-numpy.
 
    Windows with Python 2.x or 3.x (at least Python 2.6):
-      Needs numpy, scipy, and PIL.  Windows users who want binaries and are
-      not using a package like Python(x,y) where the dependencies are
+      Needs numpy, scipy, and PIL.  Windows users who want binaries and are not
+      using a package like Anaconda or Python(x,y) where the dependencies are
       pre-installed might try the following (get the version to match the
       installed Python):
 
@@ -266,5 +266,5 @@ Optional arguments:
                         filenames of the images being displayed.
 
 The makeSpanningBackground program is Copyright (c) 2012 by Allen Barker.
-Released under the permissive MIT license.
+Released under the MIT license.
 ```

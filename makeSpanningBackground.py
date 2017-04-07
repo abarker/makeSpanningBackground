@@ -88,16 +88,16 @@ except ImportError:
 #
 
 import platform
-pythonVersion = platform.python_version_tuple()
-systemOs = platform.system() # "Linux" or "Windows"
+python_version = platform.python_version_tuple()
+system_os = platform.system() # "Linux" or "Windows"
 
-if systemOs == "Windows":
+if system_os == "Windows":
     import ctypes # The ctypes package is included in Python 2.5 and higher.
-    windowsVersion = platform.win32_ver()
-    windowsRelease = platform.release()
-    yxPrimaryWindowOrigin = () # global tuple, set by getDisplayInfoWindows()
-elif systemOs == "Linux":
-    linuxVersion = platform.linux_distribution()
+    windows_version = platform.win32_ver()
+    windows_release = platform.release()
+    yx_primary_window_origin = () # global tuple, set by get_display_info_windows()
+elif system_os == "Linux":
+    linux_version = platform.linux_distribution()
 
 #
 # Set up some basic image-processing stuff.
@@ -106,19 +106,18 @@ elif systemOs == "Linux":
 # These are the allowed image suffixes, which the PIL library (used by ndimage)
 # can read (these are the common ones, but it can actually read more).
 # The same suffixes with all uppercase are also accepted, but mixed-case is not.
-allowedImageFileSuffixes = [
+allowed_image_file_suffixes = [
     ".bmp", ".dib", ".dcx", ".eps", ".ps", ".gif", ".im", ".jpg", ".jpe",
     ".jpeg", ".pcd", ".pcx", ".pdf", ".png", ".pbm", ".pgm", ".ppm", ".psd",
     ".tif", ".tiff", ".xbm", ".xpm"]
 
-allowedImageFileSuffixes += [s.upper() for s in allowedImageFileSuffixes]
-allowedImageFileSuffixes = set(allowedImageFileSuffixes)
+allowed_image_file_suffixes += [s.upper() for s in allowed_image_file_suffixes]
+allowed_image_file_suffixes = set(allowed_image_file_suffixes)
 
-
-def nameHasImageSuffix(fname):
+def name_has_image_suffix(fname):
     """Test whether file fname has an image suffix in the allowed list."""
     extension = os.path.splitext(fname)[1]
-    return extension in allowedImageFileSuffixes
+    return extension in allowed_image_file_suffixes
 
 
 #
@@ -126,15 +125,14 @@ def nameHasImageSuffix(fname):
 #
 
 
-def processPath(path):
+def process_path(path):
     """This removes any outer quotes, does an expanduser, and returns the
     absolute path."""
     if path.startswith('"') and path.endswith('"'): path = path[1:-1]
     if path.startswith("'") and path.endswith("'"): path = path[1:-1]
     return os.path.abspath(os.path.expanduser(path))
 
-
-def pathErrorExit(path, msg):
+def path_error_exit(path, msg):
     """Exit the program due to a path error, printing a message."""
     print("\nError in makeSpanningBackground related to this pathname:\n   "
           + path + "\n" + msg, file=sys.stderr)
@@ -179,7 +177,7 @@ class RedirectHelp(object):
     """This class redirects stdout in order to prettify the output
     of argparse's help and usage messages (via a postprocessor).  The
     postprocessor does a string replacement for all the pairs defined in the
-    user-defined sequence helpStringReplacementPairs.  It also adds the following
+    user-defined sequence help_string_replacement_pairs.  It also adds the following
     directives to the formatting language:
        ^^s          replaced with a space, correctly preserved by ^^f format
        \a           the bell control char is also replaced with preserved space
@@ -190,42 +188,42 @@ class RedirectHelp(object):
     whitespaces are converted to a single white space, and the text in
     paragraphs is line-wrapped with a new indent level."""
 
-    def __init__(self, outstream, helpStringReplacementPairs=(),
-                 initIndent=5, subsIndent=5, lineWidth=76):
+    def __init__(self, outstream, help_string_replacement_pairs=(),
+                 init_indent=5, subs_indent=5, line_width=76):
         """Will usually be passed sys.stdout or sys.stderr as an outstream
-        argument.  The pairs in helpStringReplacementPairs are all applied to the
+        argument.  The pairs in help_string_replacement_pairs are all applied to the
         any returned text as postprocessor string replacements.  The initial
-        indent of formatted sections is set to initIndent, and subsequent indents
-        are set to subsIndent.  The line width in formatted sections is set to
-        lineWidth."""
+        indent of formatted sections is set to init_indent, and subsequent indents
+        are set to subs_indent.  The line width in formatted sections is set to
+        line_width."""
         self.outstream = outstream
-        self.helpStringReplacementPairs = helpStringReplacementPairs
-        self.initIndent = initIndent
-        self.subsIndent = subsIndent
-        self.lineWidth = lineWidth
+        self.help_string_replacement_pairs = help_string_replacement_pairs
+        self.init_indent = init_indent
+        self.subs_indent = subs_indent
+        self.line_width = line_width
 
     def write(self, s):
-        prettyStr = s
-        for pair in self.helpStringReplacementPairs:
-            prettyStr = prettyStr.replace(pair[0], pair[1])
+        pretty_str = s
+        for pair in self.help_string_replacement_pairs:
+            pretty_str = pretty_str.replace(pair[0], pair[1])
         # Define ^^s as the bell control char for now, so fill will treat it right.
-        prettyStr = prettyStr.replace("^^s", "\a")
+        pretty_str = pretty_str.replace("^^s", "\a")
 
-        def doFill(matchObj):
+        def do_fill(match_obj):
             """Fill function for regexp to apply to ^^f matches."""
-            st = prettyStr[matchObj.start()+3:matchObj.end()-3] # get substring
+            st = pretty_str[match_obj.start()+3:match_obj.end()-3] # get substring
             st = re.sub("\n\s*\n", "^^p", st).split("^^p") # multi-new to para
             st = [" ".join(s.split()) for s in st] # multi-whites to single
             wrapper = textwrap.TextWrapper( # indent formatted paras
-                initial_indent=" "*self.initIndent,
-                subsequent_indent=" "*self.subsIndent,
-                width=self.lineWidth)
+                initial_indent=" "*self.init_indent,
+                subsequent_indent=" "*self.subs_indent,
+                width=self.line_width)
             return "\n\n".join([wrapper.fill(s) for s in st]) # wrap each para
         # do the fill on all the fill sections
-        prettyStr = re.sub(r"\^\^f.*?\^\^f", doFill, prettyStr, flags=re.DOTALL)
-        prettyStr = prettyStr.replace("\a", " ") # bell character back to space
-        prettyStr = prettyStr.replace("^^n", "\n") # replace ^^n with newline
-        self.outstream.write(prettyStr)
+        pretty_str = re.sub(r"\^\^f.*?\^\^f", do_fill, pretty_str, flags=re.DOTALL)
+        pretty_str = pretty_str.replace("\a", " ") # bell character back to space
+        pretty_str = pretty_str.replace("^^n", "\n") # replace ^^n with newline
+        self.outstream.write(pretty_str)
         self.outstream.flush() # automatically flush each write
 
     def __getattr__(self, attr):
@@ -250,22 +248,22 @@ class SelfFlushingOutstream(object):
         return getattr(self.outstream, attr)
 
 
-def parseCommandLineArguments(argparseParser, helpStringReplacementPairs=(),
-                              initIndent=5, subsIndent=5, lineWidth=76):
+def parse_command_line_arguments(argparse_parser, help_string_replacement_pairs=(),
+                              init_indent=5, subs_indent=5, line_width=76):
     """Main routine to call to execute the command-line parsing.  Returns an
     object from argparse's parse_args() routine."""
     # Redirect stdout and stderr to prettify help or usage output from argparse.
     old_stdout = sys.stdout # save stdout
     old_stderr = sys.stderr # save stderr
     sys.stdout = RedirectHelp(
-        sys.stdout, helpStringReplacementPairs, initIndent, subsIndent,
-        lineWidth) # redirect stdout to add postprocessor
+        sys.stdout, help_string_replacement_pairs, init_indent, subs_indent,
+        line_width) # redirect stdout to add postprocessor
     sys.stderr = RedirectHelp(
-        sys.stderr, helpStringReplacementPairs, initIndent, subsIndent,
-        lineWidth) # redirect stderr to add postprocessor
+        sys.stderr, help_string_replacement_pairs, init_indent, subs_indent,
+        line_width) # redirect stderr to add postprocessor
 
     # Run the actual argument-parsing operation via argparse.
-    args = argparseParser.parse_args()
+    args = argparse_parser.parse_args()
 
     # The argparse class has finished its argument-processing, so now no more
     # usage or help messages will be printed.  So restore stdout and stderr
@@ -348,7 +346,7 @@ parser.add_argument("image_files_and_dirs", nargs="+",
    name which contains a space.  Pathnames can be repeated on the list, and the
    list will be reloaded if it becomes empty.  A specified filename will be
    silently ignored if it does not have a suffix in the list """ +
-                    str(sorted(list(allowedImageFileSuffixes))) + ".^^n")
+                    str(sorted(list(allowed_image_file_suffixes))) + ".^^n")
 
 parser.add_argument("-o", "--outfile", required=True, nargs=1,
                     metavar="OUTFILE_NAME", help="""
@@ -485,50 +483,50 @@ parser.add_argument("-L", "--logcurrent", nargs=1, metavar="FNAME", help="""
 # Define some prettifying modifications to the usual help output of argparse.
 #
 
-progName = "makeSpanningBackground.py" # Separate out string, in case it changes.
-helpStringReplacementPairs = (
+prog_name = "makeSpanningBackground.py" # Separate out string, in case it changes.
+help_string_replacement_pairs = (
     ("usage: ", "^^nUsage: "),
     ("positional arguments:", "Positional arguments:^^n"),
     ("optional arguments:", "Optional arguments:^^n"),
     ("show this help message and exit",
      "Show this help message and exit.^^n"),
-    ("%s: error: too few arguments" % progName,
+    ("%s: error: too few arguments" % prog_name,
      textwrap.fill("^^nError in arguments to %s: "
                    "image source and output file arguments are required.^^n"
-                   % progName)),
-    (progName + ": error:", "Error in "+progName+":")
+                   % prog_name)),
+    (prog_name + ": error:", "Error in "+prog_name+":")
 )
+
 
 #
 # Functions which do the real work.
 #
 
-
-def getDisplayInfo():
+def get_display_info():
     """OS-independent function call for getting display information."""
 
     # If the user specified a resolution list, parse it and return those values.
     if args.reslist:
-        displayResList = [a.replace("+", "x").split("x") for a in args.reslist]
+        display_res_list = [a.replace("+", "x").split("x") for a in args.reslist]
         # convert all to ints
-        displayResList = [[int(b) for b in a] for a in displayResList]
+        display_res_list = [[int(b) for b in a] for a in display_res_list]
         # swap x and y ordering
-        displayResList = [[a[1], a[0], a[3], a[2]] for a in displayResList]
-        return tuple(tuple(i) for i in displayResList) # convert to tuples
+        display_res_list = [[a[1], a[0], a[3], a[2]] for a in display_res_list]
+        return tuple(tuple(i) for i in display_res_list) # convert to tuples
 
-    if systemOs == "Linux":
-        return getDisplayInfoLinux()
-    elif systemOs == "Windows":
-        return getDisplayInfoWindows()
+    if system_os == "Linux":
+        return get_display_info_linux()
+    elif system_os == "Windows":
+        return get_display_info_windows()
     else:
         print("\nWarning from makeSpanningBackground: System OS not recognized."
               "\nMaybe try setting resolution explicitly with the '--reslist'"
               "\noption.  Assuming an 'xrandr' system and hoping for the best.",
               file=sys.stderr)
-        return getDisplayInfoLinux()
+        return get_display_info_linux()
 
 
-def getDisplayInfoLinux():
+def get_display_info_linux():
     """Parse the output of xrandr to get the positions and resolutions of the
     displays.  Returns a tuple of 4-tuples, one for each active display.  Each
     4-tuple is in the form (y, x, yOffset, xOffset) where the values are taken
@@ -566,7 +564,7 @@ def getDisplayInfoLinux():
     output = output.splitlines() # split into output into lines
     output = [line.split() for line in output] # split lines into words
 
-    displayResList = [] # list of resolution tuples for each display
+    display_res_list = [] # list of resolution tuples for each display
     for line in output:
         if len(line) < 2:
             continue # just in case format changes
@@ -586,14 +584,14 @@ def getDisplayInfoLinux():
             res[2], res[3] = res[3], res[2] # swap to match ndimage convention
             continue
         # only accept display with resolution res if an asterisk found after it
-        asteriskInLine = [word for word in line if "*" in word]
-        if asteriskInLine:
-            displayResList.append(res)
+        asterisk_in_line = [word for word in line if "*" in word]
+        if asterisk_in_line:
+            display_res_list.append(res)
 
-    return tuple(tuple(i) for i in displayResList) # convert lists to tuples
+    return tuple(tuple(i) for i in display_res_list) # convert lists to tuples
 
 
-def getDisplayInfoWindows():
+def get_display_info_windows():
     """Get the display resolutions and offsets on a Windows system.  This is
     based on http://code.activestate.com/recipes/460509/, with modifications.
     Note that several classes and functions are defined inside this function
@@ -628,9 +626,9 @@ def getDisplayInfoWindows():
         CBFUNC = ctypes.WINFUNCTYPE(ctypes.c_int, ctypes.c_ulong, ctypes.c_ulong,
                                     ctypes.POINTER(RECT), ctypes.c_double)
 
-        def cb(hMonitor, hdcMonitor, lprcMonitor, dwData):
-            r = lprcMonitor.contents
-            data = [hMonitor]
+        def cb(h_monitor, hdc_monitor, lprc_monitor, dw_data):
+            r = lprc_monitor.contents
+            data = [h_monitor]
             data.append(r.dump())
             retval.append(data)
             return 1
@@ -641,85 +639,85 @@ def getDisplayInfoWindows():
     def monitor_areas():
         retval = []
         monitors = get_monitors()
-        for hMonitor, extents in monitors:
-            data = [hMonitor]
+        for h_monitor, extents in monitors:
+            data = [h_monitor]
             mi = MONITORINFO()
             mi.cbSize = ctypes.sizeof(MONITORINFO)
             mi.rcMonitor = RECT() # the full monitor size
             mi.rcWork = RECT()    # the working area (minus toolbars, etc.)
-            res = user.GetMonitorInfoA(hMonitor, ctypes.byref(mi)) # unused var, side effect?
+            res = user.GetMonitorInfoA(h_monitor, ctypes.byref(mi)) # unused var, side effect?
             data.append(mi.rcMonitor.dump())
             data.append(mi.rcWork.dump())
             retval.append(data)
         return retval
 
-    allAreas = monitor_areas()
-    useWorkingArea = False # use the full monitor area
-    if useWorkingArea:
+    all_areas = monitor_areas()
+    use_working_area = False # use the full monitor area
+    if use_working_area:
         index = 2
     else:
         index = 1
 
     # The primary window on Windows has top left at (0,0), and others can be
     # negative.  Translate to make all coords positive, with (0,0) the top left.
-    # But set the global variable yxPrimaryWindowOrigin to the original origin's
+    # But set the global variable yx_primary_window_origin to the original origin's
     # translated location, so we can compensate later.  Also, convert to X11
     # size and offset format (with swapped x,y for ndimage compatibility).
 
-    minX = min([min(a[index][0], a[index][2]) for a in allAreas])
-    minY = min([min(a[index][1], a[index][3]) for a in allAreas])
-    global yxPrimaryWindowOrigin
-    yxPrimaryWindowOrigin = (-minY, -minX)
-    displayResList = []
-    for area in allAreas:
+    min_x = min([min(a[index][0], a[index][2]) for a in all_areas])
+    min_y = min([min(a[index][1], a[index][3]) for a in all_areas])
+    global yx_primary_window_origin
+    yx_primary_window_origin = (-min_y, -min_x)
+    display_res_list = []
+    for area in all_areas:
         a = area[index]
-        a = [a[0]-minX, a[1]-minY, a[2]-minX, a[3]-minY]
-        displayResList.append((a[3]-a[1], a[2]-a[0], a[1], a[0])) # convert
+        a = [a[0]-min_x, a[1]-min_y, a[2]-min_x, a[3]-min_y]
+        display_res_list.append((a[3]-a[1], a[2]-a[0], a[1], a[0])) # convert
 
-    return tuple(displayResList)
+    return tuple(display_res_list)
 
 
-def reloadBackgroundFiles():
+def reload_background_files():
     """Return the list of paths corresponding to args.image_files_and_dirs
     relative to the current state of the filesystem."""
-    allBackgroundFiles = []
-    for imagePath in args.image_files_and_dirs:
-        imagePath = processPath(imagePath) # tilde expand the path
+    all_background_files = []
+    for image_path in args.image_files_and_dirs:
+        image_path = process_path(image_path) # tilde expand the path
 
         # Make sure we didn't get passed a bad pathname.
-        if not os.path.exists(imagePath):
-            pathErrorExit(imagePath, "Path does not exist.")
+        if not os.path.exists(image_path):
+            path_error_exit(image_path, "Path does not exist.")
 
         # Handle directories of images.
-        if os.path.isdir(imagePath):
+        if os.path.isdir(image_path):
             for dirpath, dirnames, filenames in \
-                    os.walk(imagePath, followlinks=True):
+                    os.walk(image_path, followlinks=True):
                 dirnames.sort() # alphabetical recurse
                 filenames.sort() # alphabetical file ordering
-                filesInDir = [os.path.join(dirpath, f) for f in filenames]
-                allBackgroundFiles += filesInDir
+                files_in_dir = [os.path.join(dirpath, f) for f in filenames]
+                all_background_files += files_in_dir
                 if not args.recursive:
                     break
 
         # Handle individual image files (note symlinks are treated as files).
-        elif os.path.isfile(imagePath):
-            allBackgroundFiles.append(imagePath)
+        elif os.path.isfile(image_path):
+            all_background_files.append(image_path)
 
         # Ignore if neither file nor directory unless has image suffix.
         else:
-            if nameHasImageSuffix(imagePath):
-                pathErrorExit(imagePath, "Not a file or a directory.")
+            if name_has_image_suffix(image_path):
+                path_error_exit(image_path, "Not a file or a directory.")
 
     # Remove non-image files from list and expand to full pathnames.
-    allBackgroundFiles = [processPath(f) for f in allBackgroundFiles
-                            if nameHasImageSuffix(f)]
-    return allBackgroundFiles
+    all_background_files = [process_path(f) for f in all_background_files
+                            if name_has_image_suffix(f)]
+    return all_background_files
 
 
-allBackgroundFiles = [] # global list of all the background files specified
+all_background_files = [] # global list of all the background files specified
 
 
-def getNextBackgroundImage(dispRes, dispResList):
+def get_next_background_image(disp_res, disp_res_list):
     """Get the next background image from the user-specified list.  The selected
     file is removed from the global list once it is selected, but only the
     selected instance is removed (files can be listed multiple times as
@@ -727,133 +725,133 @@ def getNextBackgroundImage(dispRes, dispResList):
     image itself.  Always reloads the global list of filenames when the list
     becomes empty.  Returns the empty tuple only when the global list has no
     suitable filenames (such as when '--percenterror' is too low for the
-    available images).  The display resolution argument dispRes is used to
+    available images).  The display resolution argument disp_res is used to
     calculate the percent error in scaling when the '--percenterror' option is
-    selected, and the list dispResList is used to calculate the error when the
+    selected, and the list disp_res_list is used to calculate the error when the
     '--oneimage' option is selected."""
     # Create a local list of indices to choose from, so we can remove bad
     # candidate-images locally before finally modifying the global list.
-    global allBackgroundFiles # global list of background filenames
-    backgroundIndices = list(range(len(allBackgroundFiles)))
-    localResetDone = False
+    global all_background_files # global list of background filenames
+    background_indices = list(range(len(all_background_files)))
+    local_reset_done = False
 
     # Select a file from the list of files and try to open it; repeat if needed.
     while True:
-        if not backgroundIndices:
-            if localResetDone: # return empty list, no files are suitable
+        if not background_indices:
+            if local_reset_done: # return empty list, no files are suitable
                 return ()
             else: # reload the file list to search for a suitable image file
-                localResetDone = True
-                allBackgroundFiles = reloadBackgroundFiles()
-                backgroundIndices = list(range(len(allBackgroundFiles)))
+                local_reset_done = True
+                all_background_files = reload_background_files()
+                background_indices = list(range(len(all_background_files)))
                 if args.verbose:
                     print("Loading or reloading the list of image files."
-                          "\nFound", len(allBackgroundFiles), "image filenames.\n")
+                          "\nFound", len(all_background_files), "image filenames.\n")
         if args.sequential:
-            fileIndex = backgroundIndices.pop(0)
+            file_index = background_indices.pop(0)
         else:
-            fileIndex = backgroundIndices.pop(
-                random.randint(0, len(backgroundIndices) - 1))
-        selectedFilename = allBackgroundFiles[fileIndex]
+            file_index = background_indices.pop(
+                random.randint(0, len(background_indices) - 1))
+        selected_filename = all_background_files[file_index]
         try:
-            # bgImage = sp.ndimage.imread(selectedFilename) # works
-            # bgImage = sp.misc.imread(selectedFilename) # works, too
+            # bg_image = sp.ndimage.imread(selected_filename) # works
+            # bg_image = sp.misc.imread(selected_filename) # works, too
             #
             # The below code is essentially taken directly from the definition
             # of sp.ndimage.imread, except that we check the mode and convert
             # to RGB if the mode is something else.  (Copying images in
             # different modes to a common image file can cause problems.)
-            fp = open(selectedFilename, "rb")
+            fp = open(selected_filename, "rb")
             im = Image.open(fp)
             if im.mode != "RGB":
                 im = im.convert("RGB")
-            bgImage = np.array(im)
+            bg_image = np.array(im)
             fp.close()
             # if args.verbose:
             #   print("debug image type, shape, dtype, mode: ",
-            #         type(bgImage), bgImage.shape, bgImage.dtype, bgImage.mode)
+            #         type(bg_image), bg_image.shape, bg_image.dtype, bg_image.mode)
         except IOError:
             print("\nWarning from makeSpanningBackground: The file\n   " +
-                  selectedFilename + "\ncannot be read as an image.  Ignoring it.",
+                  selected_filename + "\ncannot be read as an image.  Ignoring it.",
                   file=sys.stderr)
             continue
         # Now check for good enough fit (if that option was selected).
         if args.percenterror:
-            errFraction = calculateScaling(bgImage, dispRes, dispResList)[3]
-            if errFraction > args.percenterror[0] / 100:
+            err_fraction = calculate_scaling(bg_image, disp_res, disp_res_list)[3]
+            if err_fraction > args.percenterror[0] / 100:
                 if args.verbose:
-                    print("Error percentage is " + str(round(errFraction*100, 1))
-                          + "; rejecting image\n   ", selectedFilename)
+                    print("Error percentage is " + str(round(err_fraction*100, 1))
+                          + "; rejecting image\n   ", selected_filename)
                 continue
             else:
                 if args.verbose:
-                    print("Error percentage is " + str(round(errFraction*100, 1))
-                          + "; accepting image\n   ", selectedFilename)
+                    print("Error percentage is " + str(round(err_fraction*100, 1))
+                          + "; accepting image\n   ", selected_filename)
             if args.verbose:
                 print()
 
         # Got a good file, delete it from the full list and exit the loop.
-        del allBackgroundFiles[fileIndex]
+        del all_background_files[file_index]
         break
 
-    return (selectedFilename, bgImage)
+    return (selected_filename, bg_image)
 
 
-def copySubimage(yxExtents, fromImage, yxFromStart, toImage, yxToStart):
-    """The arguments fromImage and toImage are both ndimages; the others are all
+def copy_subimage(yx_extents, from_image, yx_from_start, to_image, yx_to_start):
+    """The arguments from_image and to_image are both ndimages; the others are all
     ordered pairs of y, x positions or sizes.  Copy a subimage of size
-    yxExtents from fromImage to toImage.  Start the subimage of fromImage at
-    yxFromStart and start the destination subimage of toImage at yxToStart.  The
+    yx_extents from from_image to to_image.  Start the subimage of from_image at
+    yx_from_start and start the destination subimage of to_image at yx_to_start.  The
     extents are all "one larger" than the largest index, like range and len.
-    The image toImage is directly modified, in-place.  All accesses are compared
+    The image to_image is directly modified, in-place.  All accesses are compared
     with the shapes of the images, and any out-of-range copy operations are
     silently ignored."""
 
     # Check bounds; reset any values to ensure all accesses are good.
 
-    # Check fromImage bounds.
-    yxExtents = list(yxExtents) # may need to reset an extent, tuple to list
+    # Check from_image bounds.
+    yx_extents = list(yx_extents) # may need to reset an extent, tuple to list
     for dim in [0, 1]: # loop over the y=0 and x=1 dimensions
-        if yxFromStart[dim] > fromImage.shape[dim]:
-            yxExtents[dim] = 0
-        if yxFromStart[dim] + yxExtents[dim] > fromImage.shape[dim]:
-            yxExtents[dim] = fromImage.shape[dim] - yxFromStart[dim]
-    # Check toImage bounds.
+        if yx_from_start[dim] > from_image.shape[dim]:
+            yx_extents[dim] = 0
+        if yx_from_start[dim] + yx_extents[dim] > from_image.shape[dim]:
+            yx_extents[dim] = from_image.shape[dim] - yx_from_start[dim]
+    # Check to_image bounds.
     for dim in [0, 1]: # loop over the y=0 and x=1 dimensions
-        if yxToStart[dim] > toImage.shape[dim]:
-            yxExtents[dim] = 0
-        if yxToStart[dim] + yxExtents[dim] > toImage.shape[dim]:
-            yxExtents[dim] = toImage.shape[dim] - yxToStart[dim]
+        if yx_to_start[dim] > to_image.shape[dim]:
+            yx_extents[dim] = 0
+        if yx_to_start[dim] + yx_extents[dim] > to_image.shape[dim]:
+            yx_extents[dim] = to_image.shape[dim] - yx_to_start[dim]
 
     # Do the copy operation.
-    toImage[yxToStart[0]: yxToStart[0]+yxExtents[0],
-            yxToStart[1]: yxToStart[1]+yxExtents[1]] = \
-        fromImage[yxFromStart[0]: yxFromStart[0]+yxExtents[0],
-                  yxFromStart[1]: yxFromStart[1]+yxExtents[1]]
+    to_image[yx_to_start[0]: yx_to_start[0]+yx_extents[0],
+            yx_to_start[1]: yx_to_start[1]+yx_extents[1]] = \
+        from_image[yx_from_start[0]: yx_from_start[0]+yx_extents[0],
+                  yx_from_start[1]: yx_from_start[1]+yx_extents[1]]
 
     # Nested loop below is equivalent to assignment above, but less efficient.
-    # for y in range(yxExtents[0]):
-    #    for x in range(yxExtents[1]):
-    #       toImage[y+yxToStart[0]][x+yxToStart[1]] = \
-    #             fromImage[y+yxFromStart[0]][x+yxFromStart[1]]
+    # for y in range(yx_extents[0]):
+    #    for x in range(yx_extents[1]):
+    #       to_image[y+yx_to_start[0]][x+yx_to_start[1]] = \
+    #             from_image[y+yx_from_start[0]][x+yx_from_start[1]]
     return
 
 
-def correctWindowsOrigin(image):
+def correct_windows_origin(image):
     """Map an image to conform to Windows conventions (negative positions and
-    tiled mode).  Uses the global variable yxPrimaryWindowOrigin to access the
+    tiled mode).  Uses the global variable yx_primary_window_origin to access the
     translated origin (to be converted back to (0,0), with proper wraparound for
     any negative pieces)."""
 
     # imLowY = 0
-    imHighY = image.shape[0]
+    im_high_y = image.shape[0]
     # imLowX = 0
-    imHighX = image.shape[1]
-    y0 = yxPrimaryWindowOrigin[0]
-    x0 = yxPrimaryWindowOrigin[1]
+    im_high_x = image.shape[1]
+    y0 = yx_primary_window_origin[0]
+    x0 = yx_primary_window_origin[1]
 
     # create new giant image
-    newImage = np.empty_like(image) # empty, same size as image
+    new_image = np.empty_like(image) # empty, same size as image
 
     # Note that the translated origin (y0,x0) breaks image into four pieces.
     # We will copy each piece as a chunk, for efficiency.  We could use
@@ -862,85 +860,85 @@ def correctWindowsOrigin(image):
     # account, this way is probably more efficient.
 
     # top left piece of image
-    newImage[imHighY-y0:imHighY, imHighX-x0:imHighX] = \
+    new_image[im_high_y-y0:im_high_y, im_high_x-x0:im_high_x] = \
         image[0:y0, 0:x0]
     # bottom right piece of image
-    newImage[0:imHighY-y0, 0:imHighX-x0] = \
-        image[y0:imHighY, x0:imHighX]
+    new_image[0:im_high_y-y0, 0:im_high_x-x0] = \
+        image[y0:im_high_y, x0:im_high_x]
     # bottom left piece of image
-    newImage[0:imHighY - y0, imHighX-x0:imHighX] = \
-        image[y0:imHighY, 0:x0]
+    new_image[0:im_high_y - y0, im_high_x-x0:im_high_x] = \
+        image[y0:im_high_y, 0:x0]
     # top right piece of image
-    newImage[imHighY-y0:imHighY, 0:imHighX-x0] = \
-        image[0:y0, x0:imHighX]
+    new_image[im_high_y-y0:im_high_y, 0:im_high_x-x0] = \
+        image[0:y0, x0:im_high_x]
 
-    return newImage
+    return new_image
 
 
-def scaleImage(image, yxNew, zoomSpline):
+def scale_image(image, yx_new, zoom_spline):
     """Perform an exact scaling of image, to the int-valued (y,x) sizes in
-    yxNew.  Note that the aspect ratio is not considered here; it should be
-    (approximately) preserved in calculating yxNew if that is desired."""
-    yxCurr = (image.shape[0], image.shape[1])
-    if yxNew == yxCurr:
+    yx_new.  Note that the aspect ratio is not considered here; it should be
+    (approximately) preserved in calculating yx_new if that is desired."""
+    yx_curr = (image.shape[0], image.shape[1])
+    if yx_new == yx_curr:
         if args.verbose:
             print("Image is at the correct scale already, skipping the rescale.")
-        scaledImage = image
+        scaled_image = image
     else:
         # Note zoom seems to truncate down to the nearest image size.  A small
         # additive constant is used to avoid problems due to floating point
         # precision and truncation (e.g., truncating down to 767 instead of
         # producing exactly the selected 768) in ndimage.interpolation.zoom.
-        zoomY = (yxNew[0]+1E-5)/yxCurr[0]
-        zoomX = (yxNew[1]+1E-5)/yxCurr[1]
+        zoom_y = (yx_new[0]+1E-5)/yx_curr[0]
+        zoom_x = (yx_new[1]+1E-5)/yx_curr[1]
         if args.verbose:
-            print("Scaling image with spline order", zoomSpline, "and "
-                  "(zoomY,zoomX) =", (round(zoomY, 4), round(zoomX, 4)))
+            print("Scaling image with spline order", zoom_spline, "and "
+                  "(zoom_y,zoom_x) =", (round(zoom_y, 4), round(zoom_x, 4)))
 
-        scaledImage = sp.ndimage.interpolation.zoom(
-            image, (zoomY, zoomX, 1), order=zoomSpline)
+        scaled_image = sp.ndimage.interpolation.zoom(
+            image, (zoom_y, zoom_x, 1), order=zoom_spline)
 
-        if args.verbose and (scaledImage.shape[0], scaledImage.shape[1]) != yxNew:
+        if args.verbose and (scaled_image.shape[0], scaled_image.shape[1]) != yx_new:
             print("Warning: Imperfect scaling in zoom operation.")
-    return scaledImage
+    return scaled_image
 
 
-def calculateScaling(image, dispRes, dispResList):
+def calculate_scaling(image, disp_res, disp_res_list):
     """Calculate the scaling of the image to fit a display with resolution
-    dispRes.  Returns a 4-tuple containing the current size, the new, scaled
+    disp_res.  Returns a 4-tuple containing the current size, the new, scaled
     size (which may be larger than the resolution and need cropping), any
     offsets due to the '--fitimage' option, and the fractional error."""
-    yxCurr = (image.shape[0], image.shape[1])
-    zoomY = dispRes[0] / image.shape[0] # zoom to make y fit exactly
-    zoomX = dispRes[1] / image.shape[1] # zoom to make x fit exactly
-    yxExactY = (dispRes[0], int(round(yxCurr[1]*zoomY)))
-    yxExactX = (int(round(yxCurr[0]*zoomX)), dispRes[1])
-    yxNew = yxExactY
+    yx_curr = (image.shape[0], image.shape[1])
+    zoom_y = disp_res[0] / image.shape[0] # zoom to make y fit exactly
+    zoom_x = disp_res[1] / image.shape[1] # zoom to make x fit exactly
+    yx_exact_y = (disp_res[0], int(round(yx_curr[1]*zoom_y)))
+    yx_exact_x = (int(round(yx_curr[0]*zoom_x)), disp_res[1])
+    yx_new = yx_exact_y
     if args.fitimage:
-        if yxNew[1] > dispRes[1]:
-            yxNew = yxExactX
-            fitimageOffsets = [int(round(abs((yxNew[0]-dispRes[0])/2))), 0]
-            errFraction = (dispRes[0]-yxNew[0])*dispRes[1]/(dispRes[0]*dispRes[1])
+        if yx_new[1] > disp_res[1]:
+            yx_new = yx_exact_x
+            fitimage_offsets = [int(round(abs((yx_new[0]-disp_res[0])/2))), 0]
+            err_fraction = (disp_res[0]-yx_new[0])*disp_res[1]/(disp_res[0]*disp_res[1])
         else:
-            fitimageOffsets = [0, int(round(abs((yxNew[1]-dispRes[1])/2)))]
-            errFraction = (dispRes[1]-yxNew[1])*dispRes[0]/(dispRes[0]*dispRes[1])
+            fitimage_offsets = [0, int(round(abs((yx_new[1]-disp_res[1])/2)))]
+            err_fraction = (disp_res[1]-yx_new[1])*disp_res[0]/(disp_res[0]*disp_res[1])
     else:
-        if yxNew[1] < dispRes[1]:
-            yxNew = yxExactX
-        fitimageOffsets = [0, 0]
-        errFraction = (yxNew[0]-dispRes[0])*yxNew[1] / (yxNew[0]*yxNew[1]) \
-            + (yxNew[1]-dispRes[1])*yxNew[0] / (yxNew[0]*yxNew[1])
+        if yx_new[1] < disp_res[1]:
+            yx_new = yx_exact_x
+        fitimage_offsets = [0, 0]
+        err_fraction = (yx_new[0]-disp_res[0])*yx_new[1] / (yx_new[0]*yx_new[1]) \
+            + (yx_new[1]-disp_res[1])*yx_new[0] / (yx_new[0]*yx_new[1])
     if args.oneimage:
-        totalScreenArea = sum([d[0]*d[1] for d in dispResList])
-        errFraction = abs(yxNew[0]*yxNew[1] - totalScreenArea)/totalScreenArea
+        total_screen_area = sum([d[0]*d[1] for d in disp_res_list])
+        err_fraction = abs(yx_new[0]*yx_new[1] - total_screen_area)/total_screen_area
 
-    return (yxCurr, yxNew, fitimageOffsets, errFraction)
+    return (yx_curr, yx_new, fitimage_offsets, err_fraction)
 
 
-def createGiantImage(imageList, dispResListArg):
+def create_giant_image(image_list, disp_res_list_arg):
     """Create and return the final giant image to set as the combined background
-    image.  Each image in imageList is mapped to the corresponding display in
-    dispResListArg.  Zoom is done such that each image exactly fits the display on
+    image.  Each image in image_list is mapped to the corresponding display in
+    disp_res_list_arg.  Zoom is done such that each image exactly fits the display on
     at least one dimension; any error in the other dimension is cut off
     equally on both ends."""
     # 1) Find a bounding box of all displays and create a giant image that size.
@@ -951,124 +949,124 @@ def createGiantImage(imageList, dispResListArg):
     # 4) Convert to Windows tiled mode, if necessary.
     # 5) Return the giant image.
 
-    dispResList = dispResListArg[:] # a local copy, modified for oneimage option
+    disp_res_list = disp_res_list_arg[:] # a local copy, modified for oneimage option
 
     # Find the bounding box around all the displays.
     # minY = 0
-    maxY = max([i[0] + i[2] for i in dispResList])
+    max_y = max([i[0] + i[2] for i in disp_res_list])
     # minX = 0
-    maxX = max([i[1] + i[3] for i in dispResList])
+    max_x = max([i[1] + i[3] for i in disp_res_list])
 
     # Create the empty giant image.
     if args.verbose:
-        print("Creating a large image of size", (maxY, maxX),
+        print("Creating a large image of size", (max_y, max_x),
               "\nwhich is a bounding box on all the displays.")
-    giantImage = np.empty((maxY, maxX, 3), "uint8") # empty display-sized RGB image
+    giant_image = np.empty((max_y, max_x, 3), "uint8") # empty display-sized RGB image
 
     # If oneimage option, reset the display list to represent one large display.
     if args.oneimage:
-        dispResList = [(maxY, maxX, 0, 0)]
+        disp_res_list = [(max_y, max_x, 0, 0)]
 
     # Scale all the images to exactly match their corresponding display's
     # resolution (when zoomed/fit according to the selected method).
-    scaledImageList = []
-    fitimageOffsetList = [] # extra offsets due to --fitimage, we'll append to it
-    for image, dispRes, count in \
-            zip(imageList, dispResList, range(len(imageList))):
+    scaled_image_list = []
+    fitimage_offset_list = [] # extra offsets due to --fitimage, we'll append to it
+    for image, disp_res, count in zip(image_list, disp_res_list, range(len(image_list))):
         if args.verbose:
             print()
 
         # Calculate the scaling.
-        yxCurr, yxNew, fitimageOffsets, err = \
-            calculateScaling(image, dispRes, dispResList)
-        fitimageOffsetList.append(fitimageOffsets)
+        yx_curr, yx_new, fitimage_offsets, err = \
+            calculate_scaling(image, disp_res, disp_res_list)
+        fitimage_offset_list.append(fitimage_offsets)
 
         # Perform the scaling.
         if args.verbose:
             print("Image", count, "has initial shape", image.shape)
-        scaledImage = scaleImage(image, yxNew, zoomSpline)
+        scaled_image = scale_image(image, yx_new, zoom_spline)
 
-        scaledImageList.append(scaledImage)
+        scaled_image_list.append(scaled_image)
 
         if args.verbose:
-            print("Image", count, "now has shape", scaledImage.shape)
+            print("Image", count, "now has shape", scaled_image.shape)
 
     # Set all pixels to the background fill color, if that option is selected.
-    # All the pixels in the initial giantImage are assigned RGB values in a
+    # All the pixels in the initial giant_image are assigned RGB values in a
     # loop; not the most efficient way, but it is simple and it works.
-    rgbFill = []
+    rgb_fill = []
     if args.colorfill:
-        rgbFill = args.colorfill
+        rgb_fill = args.colorfill
     if args.fitimage:
-        rgbFill = args.fitimage
-    if rgbFill:
-        rgbBytes = [np.uint8(i) for i in rgbFill] # explicitly cast to uint8
-        giantImage[:, :] = rgbBytes # note numpy fill method is for scalar vals
-        # giantImage[:][:] = rgbBytes  # this works, too
+        rgb_fill = args.fitimage
+    if rgb_fill:
+        rgb_bytes = [np.uint8(i) for i in rgb_fill] # explicitly cast to uint8
+        giant_image[:, :] = rgb_bytes # note numpy fill method is for scalar vals
+        # giant_image[:][:] = rgb_bytes  # this works, too
 
     # Copy the central portion of each scaled image to the correct place in the
     # giant image (one dimension may be cut-off automatically by copy routine).
-    for scaledImage, dispRes, fitOffsets, count in zip(
-            scaledImageList, dispResList, fitimageOffsetList, range(len(dispResList))):
+    for scaled_image, disp_res, fitOffsets, count in zip(
+                        scaled_image_list, disp_res_list, fitimage_offset_list,
+                        range(len(disp_res_list))):
         if not args.fitimage:
             # scaled image won't necessarily all fit, compensate for the overlap
             # (assume scaled size minus disp might be slightly neg, imperfect zoom)
-            yStart = (scaledImage.shape[0] - dispRes[0]) / 2
-            xStart = (scaledImage.shape[1] - dispRes[1]) / 2
-            yStart = int(round(max(0.0, yStart)))
-            xStart = int(round(max(0.0, xStart)))
-            yxFromStart = (yStart, xStart)
+            y_start = (scaled_image.shape[0] - disp_res[0]) / 2
+            x_start = (scaled_image.shape[1] - disp_res[1]) / 2
+            y_start = int(round(max(0.0, y_start)))
+            x_start = int(round(max(0.0, x_start)))
+            yx_from_start = (y_start, x_start)
         elif args.fitimage:
             # scaled image will fully fit in the display, scaled above to do so
-            yxFromStart = (0, 0)
-        yxExtents = (dispRes[0], dispRes[1]) # set extents to display size
-        yxToStart = (dispRes[2] + fitOffsets[0], dispRes[3] + fitOffsets[1])
+            yx_from_start = (0, 0)
+        yx_extents = (disp_res[0], disp_res[1]) # set extents to display size
+        yx_to_start = (disp_res[2] + fitOffsets[0], disp_res[3] + fitOffsets[1])
         if args.verbose:
-            print("\nCopying image", count, "from pixel", yxFromStart,
-                  "with extents", yxExtents,
-                  "\nto the large final image, starting at pixel", yxToStart)
-        # Do the actual copy operation.  Note that if scaledImage is larger than
-        # extents (zoomed up) copySubimage will implicitly crop, and if extents
-        # are larger than the size of scaledImage (--fitimage mode) then the
-        # extents will be automatically reduced in copySubimage.
-        copySubimage(yxExtents, scaledImage, yxFromStart, giantImage, yxToStart)
+            print("\nCopying image", count, "from pixel", yx_from_start,
+                  "with extents", yx_extents,
+                  "\nto the large final image, starting at pixel", yx_to_start)
+        # Do the actual copy operation.  Note that if scaled_image is larger than
+        # extents (zoomed up) copy_subimage will implicitly crop, and if extents
+        # are larger than the size of scaled_image (--fitimage mode) then the
+        # extents will be automatically reduced in copy_subimage.
+        copy_subimage(yx_extents, scaled_image, yx_from_start, giant_image, yx_to_start)
 
-    if (systemOs == "Windows" or args.windows) and not args.x11:
+    if (system_os == "Windows" or args.windows) and not args.x11:
         if args.windows:
-            global yxPrimaryWindowOrigin
-            yxPrimaryWindowOrigin = (args.windows[1], args.windows[0])
+            global yx_primary_window_origin
+            yx_primary_window_origin = (args.windows[1], args.windows[0])
         if args.verbose:
             print("Correcting the origin of the image (on Windows OS).")
-        giantImage = correctWindowsOrigin(giantImage)
+        giant_image = correct_windows_origin(giant_image)
 
-    # plt.imshow(giantImage)
+    # plt.imshow(giant_image)
     # plt.show() # for debugging
-    return giantImage
+    return giant_image
 
 
-def setImageAsCurrentWallpaper(imageFileName):
-    """Set the file imageFileName to be a spanning background image (in either
+def set_image_as_current_wallpaper(image_file_name):
+    """Set the file image_file_name to be a spanning background image (in either
     Linux or Windows)."""
-    imageFileName = processPath(imageFileName)
+    image_file_name = process_path(image_file_name)
 
-    if systemOs == "Linux":
+    if system_os == "Linux":
         if args.verbose:
             print("\nSetting background on Linux OS.")
 
-        currentEnv = os.environ.copy()
-        currentEnv["DISPLAY"] = ":0" # in case run from where DISPLAY isn't set
+        current_env = os.environ.copy()
+        current_env["DISPLAY"] = ":0" # in case run from where DISPLAY isn't set
 
         # Find out what window manager is currently in use.
-        currentWindowManager = currentEnv["XDG_CURRENT_DESKTOP"]
+        current_window_manager = current_env["XDG_CURRENT_DESKTOP"]
         if args.verbose:
             print("Desktop environment variable is XDG_CURRENT_DESKTOP =",
-                  currentWindowManager)
+                  current_window_manager)
 
-        if currentWindowManager == "LXDE":
+        if current_window_manager == "LXDE":
             # -w, --set-wallpaper=FILE   Set desktop wallpaper from image FILE
             # --wallpaper-mode=MODE      MODE=(color|stretch|fit|center|tile)
             try:
-                subprocess.call(["pcmanfm", "--set-wallpaper", imageFileName,
+                subprocess.call(["pcmanfm", "--set-wallpaper", image_file_name,
                                  "--wallpaper-mode=fit"])
             except OSError as e:
                 print("\nError attempting to run 'pcmanfm'.  Be sure the program"
@@ -1076,23 +1074,23 @@ def setImageAsCurrentWallpaper(imageFileName):
                       "\ncreated but there was an error in setting it as the"
                       "\nbackground image")
 
-        elif currentWindowManager == "X-Cinnamon":
+        elif current_window_manager == "X-Cinnamon":
             if args.verbose:
                 print("Detected Cinnamon window manager, using Gnome calls.")
-            currentWindowManager = "GNOME"
+            current_window_manager = "GNOME"
 
-        elif currentWindowManager == "Unity":
+        elif current_window_manager == "Unity":
             if args.verbose:
                 print("Detected Unity window manager, using Gnome calls.")
-            currentWindowManager = "GNOME"
+            current_window_manager = "GNOME"
 
-        elif currentWindowManager != "GNOME":
+        elif current_window_manager != "GNOME":
             # Later more options may be added, but assume Gnome for now if not LXDE.
             if args.verbose:
                 print("Assuming Gnome window manager and hoping for the best.")
-            currentWindowManager = "GNOME"
+            current_window_manager = "GNOME"
 
-        if currentWindowManager == "GNOME":
+        if current_window_manager == "GNOME":
             # TODO we can detect Gnome 2 versus Gnome 3 by running
             #    gnome-session --version
             # and checking the output.  For Gnome 2 the commands should be
@@ -1101,7 +1099,7 @@ def setImageAsCurrentWallpaper(imageFileName):
             #    gconftool-2 --type=string --set \
             #          /desktop/gnome/background/picture_options stretched
 
-            imageUrl = "file://" + imageFileName
+            image_url = "file://" + image_file_name
             # Use gconf-editor to see the keys that can be set for a schema, go to
             #    / -> desktop -> gnome -> backgrounds
             # and click on a keys (it will list the values at the bottom).
@@ -1112,51 +1110,51 @@ def setImageAsCurrentWallpaper(imageFileName):
                 # os.system("GSETTINGS_BACKEND=dconf gsettings set "
                 #          "org.gnome.desktop.background picture-options spanned")
                 # os.system("GSETTINGS_BACKEND=dconf gsettings set "
-                #          "org.gnome.desktop.background picture-uri \""+imageUrl+"\"")
-                currentEnv["GSETTINGS_BACKEND"] = "dconf"
+                #          "org.gnome.desktop.background picture-uri \""+image_url+"\"")
+                current_env["GSETTINGS_BACKEND"] = "dconf"
                 subprocess.call(["gsettings", "set",
                                  "org.gnome.settings-daemon.plugins.background",
-                                 "active", "true"], env=currentEnv)
+                                 "active", "true"], env=current_env)
                 subprocess.call(["gsettings", "set", "org.gnome.desktop.background",
-                                 "picture-options", "spanned"], env=currentEnv)
+                                 "picture-options", "spanned"], env=current_env)
                 subprocess.call(["gsettings", "set", "org.gnome.desktop.background",
-                                 "picture-uri", imageUrl], env=currentEnv)
+                                 "picture-uri", image_url], env=current_env)
             except OSError as e:
                 print("\nError attempting to run 'gsettings'.  Be sure the program is"
                       "\ninstalled on your system.  The image was apparently created"
                       "\nbut there was an error in setting it as the background."
                       "\nThe system reported:\n", e, file=sys.stderr)
 
-    elif systemOs == "Windows":
+    elif system_os == "Windows":
         if args.verbose:
             print("\nSetting background on Windows OS.")
 
-        def setWallpaperMode():
+        def set_wallpaper_mode():
             """Set the wallpaper mode to tiled.  Code modified from
             http://code.activestate.com/recipes/435877-change-the-wallpaper-under-windows/
             """
-            if pythonVersion[0] == "2":
+            if python_version[0] == "2":
                 import _winreg
                 winreg = _winreg
             else: import winreg
 
-            wallpaperStyle = '0'
-            tileWallpaper = '1' # use '0' for regular mode
+            wallpaper_style = '0'
+            tile_wallpaper = '1' # use '0' for regular mode
             try:
-                desktopKey = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
+                desktop_key = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
                                              'Control Panel\\Desktop',
                                              0,
                                              winreg.KEY_SET_VALUE)
-                winreg.SetValueEx(desktopKey,
+                winreg.SetValueEx(desktop_key,
                                    'WallpaperStyle',
                                    0,
                                    winreg.REG_SZ,
-                                   wallpaperStyle)
-                winreg.SetValueEx(desktopKey,
+                                   wallpaper_style)
+                winreg.SetValueEx(desktop_key,
                                    'TileWallpaper',
                                    0,
                                    winreg.REG_SZ,
-                                   tileWallpaper)
+                                   tile_wallpaper)
                 return True
             except:
                 print("Warning: Exception encountered setting wallpaper mode",
@@ -1168,10 +1166,10 @@ def setImageAsCurrentWallpaper(imageFileName):
         SPIF_UPDATEINIFILE = 0X01
         SPIF_SENDWININICHANGE = 0X02
 
-        def setBackground(image):
+        def set_background(image):
             """Set the background wallpaper to display."""
             try:
-                if windowsRelease == "7":
+                if windows_release == "7":
                     ctypes.windll.user32.SystemParametersInfoW(
                         SPI_SETDESKWALLPAPER,
                         0,
@@ -1187,15 +1185,14 @@ def setImageAsCurrentWallpaper(imageFileName):
                 print("\nError in makeSpanningBackground: Setting the background "
                       "wallpaper failed.", file=sys.stderr)
 
-        setWallpaperMode() # set to tiled mode
-        setBackground(imageFileName)
+        set_wallpaper_mode() # set to tiled mode
+        set_background(image_file_name)
 
     else:
         # TODO consider Cygwin implementation, but scipy is a pain to install
         # on Cygwin for now.
         print("\nSystem OS not recognized; not setting the generated image as"
               "\nthe current background wallpaper.", file=sys.stderr)
-    return
 
 
 #
@@ -1206,114 +1203,114 @@ def setImageAsCurrentWallpaper(imageFileName):
 if __name__ == "__main__":
 
     # Parse the command-line arguments.
-    args = parseCommandLineArguments(parser, helpStringReplacementPairs)
+    args = parse_command_line_arguments(parser, help_string_replacement_pairs)
 
     # Set up the output file.
-    saveFileName = processPath(args.outfile[0]) # make absolute, expand tilde
-    extension = os.path.splitext(saveFileName)[1]
-    if extension not in allowedImageFileSuffixes:
-        pathErrorExit(saveFileName, "No recognized image file suffix or"
+    save_file_name = process_path(args.outfile[0]) # make absolute, expand tilde
+    extension = os.path.splitext(save_file_name)[1]
+    if extension not in allowed_image_file_suffixes:
+        path_error_exit(save_file_name, "No recognized image file suffix or"
                       " extension on the specified output filename.")
-    dirname, filename = os.path.split(saveFileName)
+    dirname, filename = os.path.split(save_file_name)
     if not os.path.exists(dirname):
-        pathErrorExit(saveFileName, "The specified directory for the output"
+        path_error_exit(save_file_name, "The specified directory for the output"
                       " image file does not exist.")
 
-    if os.path.exists(saveFileName) and not os.path.isfile(saveFileName):
-        pathErrorExit(saveFileName, "The specified output pathname exists but"
+    if os.path.exists(save_file_name) and not os.path.isfile(save_file_name):
+        path_error_exit(save_file_name, "The specified output pathname exists but"
                       " is not a file.")
 
     # Handle --noclobber here, before possibly wasting time to create an image.
-    if args.noclobber and os.path.exists(saveFileName):
+    if args.noclobber and os.path.exists(save_file_name):
         print("\nWarning from makeSpanningBackground: The specified output"
               " file\n   " + args.outfile[0] + "\nalready exists.  No file was"
               " written due to the noclobber option.")
         sys.exit(0)
 
     # Handle the --zoomspline option and its default value.
-    zoomSpline = 3
+    zoom_spline = 3
     if args.zoomspline:
-        zoomSpline = args.zoomspline[0]
-        if zoomSpline > 5 or zoomSpline < 0:
+        zoom_spline = args.zoomspline[0]
+        if zoom_spline > 5 or zoom_spline < 0:
             print("\nError in makeSpanningBackground: The specified spline order\n"
-                  + str(zoomSpline) + " is not in the range 0-5.\n")
+                  + str(zoom_spline) + " is not in the range 0-5.\n")
             sys.exit(1)
 
     # Print a welcome message if the verbose option was chosen.
     if args.verbose:
-        if systemOs == "Windows":
+        if system_os == "Windows":
             print("\nRunning makeSpanningBackground on Windows..."
-                  "\nWindows version:", windowsVersion)
-        elif systemOs == "Linux":
+                  "\nWindows version:", windows_version)
+        elif system_os == "Linux":
             print("\nRunning makeSpanningBackground on Linux..."
-                  "\nLinux distribution:", linuxVersion)
+                  "\nLinux distribution:", linux_version)
         else:
             print("\nRunning makeSpanningBackground on an unknown OS...")
 
     # Now begin looping if the '--timedelay' option was set; if it was not
     # the loop will break after one execution.
-    firstLoopCompleted = False
+    first_loop_completed = False
     while True:
 
         # Get the current display information.
-        displayResList = getDisplayInfo()
-        numDisplays = len(displayResList)
-        if numDisplays == 0:
+        display_res_list = get_display_info()
+        num_displays = len(display_res_list)
+        if num_displays == 0:
             print("\nError in makeSpanningBackground: No displays detected."
                   "\nMaybe try explicitly setting the resolutions with the"
                   "\n'--reslist' option.\n")
             sys.exit(1)
         if args.verbose:
-            print("\nDetected", numDisplays, "displays:\n   ", displayResList,
+            print("\nDetected", num_displays, "displays:\n   ", display_res_list,
                   "\n")
 
         # Select an image for each display.
-        bgImages = []
-        bgImageNames = []
+        bg_images = []
+        bg_image_names = []
         # TODO use enumerate
-        for dispRes, count in zip(displayResList, range(len(displayResList))):
-            image = getNextBackgroundImage(dispRes, displayResList)
+        for disp_res, count in zip(display_res_list, range(len(display_res_list))):
+            image = get_next_background_image(disp_res, display_res_list)
             if not image:
                 print("\nError in makeSpanningBackground: No suitable image files"
                       "\nfound for display", str(count)+".\n", file=sys.stderr)
                 sys.exit(1)
             if args.verbose:
                 print("Image selected for display", count, "is\n   ", image[0], "\n")
-            bgImageNames.append(image[0])
-            bgImages.append(image[1])
+            bg_image_names.append(image[0])
+            bg_images.append(image[1])
             if args.oneimage:
                 break
 
         if args.logcurrent:
-            expandedLogName = processPath(args.logcurrent[0]) # tilde expand
+            expanded_log_name = process_path(args.logcurrent[0]) # tilde expand
             # TODO make sure this is not a directory first
-            currentImagesLog = open(expandedLogName, "w")
-            for count, img in enumerate(bgImageNames):
+            current_images_log = open(expanded_log_name, "w")
+            for count, img in enumerate(bg_image_names):
                 print("Image on display", count, "is\n   ", img, "\n",
-                      file=currentImagesLog)
-            currentImagesLog.close()
+                      file=current_images_log)
+            current_images_log.close()
 
         # Make the large, combined image.
-        giantImage = createGiantImage(bgImages, displayResList)
+        giant_image = create_giant_image(bg_images, display_res_list)
 
         # Write out the giant image to a file.
         try:
             if args.verbose:
-                print("\nWriting the combined image to the file\n   "+saveFileName)
-            sp.misc.imsave(saveFileName, giantImage)
+                print("\nWriting the combined image to the file\n   "+save_file_name)
+            sp.misc.imsave(save_file_name, giant_image)
         except IOError as e:
             print("\nWarning from makeSpanningBackground: Could not save to file"
-                  "\n   " + saveFileName, "\nThe reported error was:\n", e,
+                  "\n   " + save_file_name, "\nThe reported error was:\n", e,
                   file=sys.stderr)
 
         if not args.dontapply:
             if args.verbose:
                 print("\nSetting the new image as the current background wallpaper.")
-                if systemOs == "Windows":
+                if system_os == "Windows":
                     print("(Be sure to set wallpaper mode to 'tiled' in Windows.)")
-            setImageAsCurrentWallpaper(saveFileName)
+            set_image_as_current_wallpaper(save_file_name)
 
-        firstLoopCompleted = True
+        first_loop_completed = True
         if not args.timedelay:
             break
         if args.verbose:
