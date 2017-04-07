@@ -602,7 +602,7 @@ def getDisplayInfoWindows():
 
     # import ctypes # imported at the top of the file
     # windll seems to change to pydll in Cygwin python, for future
-    user = ctypes.windll.user32 
+    user = ctypes.windll.user32
 
     class RECT(ctypes.Structure):
         _fields_ = [
